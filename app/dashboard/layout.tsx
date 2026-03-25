@@ -2,6 +2,9 @@ import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { BriefcaseBusiness, Target, Users } from "lucide-react";
 
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
+const hasValidClerkPublishableKey = Boolean(publishableKey && !/x{8,}/i.test(publishableKey));
+
 const navItems = [
   {
     href: "/dashboard/admin",
@@ -27,7 +30,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1600px]">
+      <div className="mx-auto flex min-h-screen w-full max-w-400">
         <aside className="flex w-72 shrink-0 flex-col border-r border-zinc-800/80 bg-zinc-900/70 p-5 backdrop-blur-sm">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Capital Architect</p>
@@ -53,13 +56,17 @@ export default function DashboardLayout({
 
           <div className="mt-auto flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-3">
             <p className="text-sm text-zinc-400">Account</p>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "h-9 w-9",
-                },
-              }}
-            />
+            {hasValidClerkPublishableKey ? (
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-9 w-9",
+                  },
+                }}
+              />
+            ) : (
+              <span className="rounded-md border border-zinc-700 px-2 py-1 text-xs text-zinc-400">Clerk not configured</span>
+            )}
           </div>
         </aside>
 
