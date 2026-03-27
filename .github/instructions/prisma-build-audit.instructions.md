@@ -1,10 +1,6 @@
 ---
 description: "Use when auditing or changing Prisma schema, Prisma config, Supabase connection setup, or database-backed API routes. Covers build-consistency and migration-risk checks."
-applyTo:
-  - "prisma/**/*.prisma"
-  - "prisma.config.ts"
-  - "lib/prisma.ts"
-  - "app/api/**/*.ts"
+applyTo: "prisma/**/*.prisma"
 ---
 # Prisma Build Audit Rules
 

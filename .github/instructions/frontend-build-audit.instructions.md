@@ -1,9 +1,6 @@
 ---
 description: "Use when auditing or changing frontend routes, layouts, pages, or Tailwind classes in App Router. Covers build-consistency checks for dashboard and intake UI."
-applyTo:
-  - "app/**/*.ts"
-  - "app/**/*.tsx"
-  - "app/**/*.css"
+applyTo: "app/**/*.ts, app/**/*.tsx, app/**/*.css"
 ---
 # Frontend Build Audit Rules
 
