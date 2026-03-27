@@ -8,10 +8,26 @@ type SubmissionState = {
   message: string;
 };
 
+type IntakeResponse = {
+  assignedTier?: string;
+  error?: string;
+};
+
 const initialSubmissionState: SubmissionState = {
   status: "idle",
   message: "",
 };
+
+async function parseResponsePayload(response: Response): Promise<IntakeResponse> {
+  const text = await response.text();
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text) as IntakeResponse;
+  } catch {
+    return { error: text };
+  }
+}
 
 export default function IntakePage() {
   const [leadName, setLeadName] = useState("");
@@ -50,7 +66,7 @@ export default function IntakePage() {
         body: JSON.stringify(payload),
       });
 
-      const data = (await response.json()) as { assignedTier?: string; error?: string };
+      const data = await parseResponsePayload(response);
       if (!response.ok) {
         throw new Error(data.error || "Submission failed");
       }
