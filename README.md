@@ -25,6 +25,9 @@ npm install
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (required for Clerk-protected dashboard behavior)
 - `CLERK_SECRET_KEY` (required for Clerk-protected dashboard behavior)
 - `INTAKE_API_KEY` (optional but recommended for external intake calls)
+- `NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL` (optional; primary checkout action on `/membership`)
+- `NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL` (optional; secondary booking action on `/membership`)
+- `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.com`)
 
 3. Start development:
 
@@ -97,7 +100,7 @@ The endpoint:
 Invoke-RestMethod -Uri "http://localhost:3000/api/intake" -Method Post -Headers @{"x-intake-key"="caparch_intake_local_2026"} -ContentType "application/json" -Body '{"leadName":"Test Capital LLC","ficoBand":"720+","utilizationBand":"31-50%","bankruptcy":"No","recentLates":"No","sourceLeadId":"local-test-1"}'
 ```
 
-3. Confirm the lead appears in `/dashboard/admin`
+1. Confirm the lead appears in `/dashboard/admin`
 
 ## Build Inconsistency Sweep
 
@@ -123,6 +126,21 @@ npm run build
 
 - This repository uses `proxy.ts` for route protection. Do not introduce `middleware.ts`.
 - Keep `.env` uncommitted and `.env.example` safe for sharing.
+
+## Membership CTA Event Tracking
+
+The `/membership` page emits click events for conversion CTAs. If `gtag` and/or `dataLayer` are present, events are sent with the names below.
+
+| Event Name | Trigger | Destination Example |
+| --- | --- | --- |
+| `membership_checkout_click` | User clicks the checkout CTA | `https://checkout.example.com/capital-architect` |
+| `membership_call_click` | User clicks the booking/call CTA | `https://calendly.com/example/capital-architect-membership` |
+| `membership_contact_click` | User clicks a membership contact email CTA | `mailto:support@capitalarchitect.com?subject=Capital%20Architect%20Membership` |
+
+Shared event parameters:
+
+- `destination`: outbound URL or mailto destination
+- `channel`: always `membership`
 
 ## Recommended Branch Protection
 

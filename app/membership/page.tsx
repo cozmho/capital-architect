@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { CheckCircle2, Crown, ShieldCheck } from "lucide-react";
+import { ArrowRight, CalendarCheck2, CheckCircle2, Clock3, Crown, Mail, ShieldCheck } from "lucide-react";
+import { TrackedExternalLink } from "./tracked-external-link";
 
 export default function MembershipPage() {
   const checkoutUrl = process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL;
@@ -13,7 +14,7 @@ export default function MembershipPage() {
           <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Capital Architect</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">Client Membership Dashboard</h1>
           <p className="mt-3 max-w-3xl text-sm text-zinc-300">
-            Intake submission is free. Full progress tracking, milestone updates, and client portal access are available with a paid membership.
+            Intake submission is free. Full progress tracking, milestone updates, and private client portal access are available with a paid membership.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
@@ -23,32 +24,70 @@ export default function MembershipPage() {
               Submit Free Intake
             </Link>
             {checkoutUrl ? (
-              <a
+              <TrackedExternalLink
                 href={checkoutUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center rounded-xl border border-emerald-500/60 bg-emerald-500/20 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/30"
+                eventName="membership_checkout_click"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/60 bg-emerald-500/20 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/30"
               >
                 Start Membership Checkout
-              </a>
+                <ArrowRight className="h-4 w-4" />
+              </TrackedExternalLink>
             ) : (
-              <a
+              <TrackedExternalLink
                 href={`mailto:${contactEmail}?subject=Capital%20Architect%20Membership`}
-                className="inline-flex items-center justify-center rounded-xl border border-emerald-500/60 bg-emerald-500/20 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/30"
+                eventName="membership_contact_click"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/60 bg-emerald-500/20 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/30"
               >
+                <Mail className="h-4 w-4" />
                 Request Membership Access
-              </a>
+              </TrackedExternalLink>
             )}
             {bookingUrl ? (
-              <a
+              <TrackedExternalLink
                 href={bookingUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-700"
+                eventName="membership_call_click"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-700"
               >
+                <CalendarCheck2 className="h-4 w-4" />
                 Book Membership Call
-              </a>
-            ) : null}
+              </TrackedExternalLink>
+            ) : (
+              <TrackedExternalLink
+                href={`mailto:${contactEmail}?subject=Book%20a%20Membership%20Call`}
+                eventName="membership_call_click"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-700"
+              >
+                <CalendarCheck2 className="h-4 w-4" />
+                Request A Membership Call
+              </TrackedExternalLink>
+            )}
+          </div>
+          <div className="mt-4 rounded-xl border border-amber-500/35 bg-amber-500/8 px-4 py-3 text-xs text-amber-100">
+            <div className="flex items-center gap-2 text-amber-200">
+              <Clock3 className="h-4 w-4" />
+              <p className="font-semibold uppercase tracking-[0.14em]">Next Client Activation Window</p>
+            </div>
+            <p className="mt-2 leading-relaxed text-amber-100/90">
+              Membership activations are processed in order received. Completing checkout now moves your account into the next onboarding queue without delaying access setup.
+            </p>
+          </div>
+          <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-3 text-xs text-zinc-400">
+            <p className="font-medium text-zinc-200">Need a direct line before checkout?</p>
+            <p className="mt-1">
+              Email 
+              <TrackedExternalLink
+                href={`mailto:${contactEmail}?subject=Capital%20Architect%20Membership`}
+                eventName="membership_contact_click"
+                className="text-zinc-200 underline decoration-zinc-600 underline-offset-4 transition hover:decoration-zinc-300"
+              >
+                {contactEmail}
+              </TrackedExternalLink>
+              {checkoutUrl ? " or start checkout now." : " to get your private dashboard activated."}
+            </p>
           </div>
         </header>
 
