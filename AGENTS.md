@@ -54,6 +54,12 @@ When the task asks to find build inconsistencies, use this exact order and only 
 4. Prefer smallest fix that preserves current architecture.
 5. Do not report style preferences as build failures unless a tool enforces them.
 
+## Security Gate Rules
+
+- Treat `scripts/audit-gate.mjs` allowlist entries as temporary exceptions only.
+- New allowlist entries must include GHSA, package, reason, and expiry.
+- If allowlist entries expire and CI fails, resolve via explicit follow-up PR (remove or renew with rationale).
+
 ## Routing And Auth
 
 - Keep dashboard protection in Clerk route-guard middleware equivalent via `proxy.ts`.

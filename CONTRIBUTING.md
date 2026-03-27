@@ -83,6 +83,15 @@ Security scanning runs via `.github/workflows/security.yml` on pull requests, pu
 
 `audit:gate` blocks on non-allowlisted high/critical advisories and allows a temporary, explicit GHSA allowlist for known upstream issues.
 
+### Audit Allowlist Policy
+
+When updating `scripts/audit-gate.mjs` allowlist entries:
+
+- Include GHSA ID, package name, reason, and expiry date.
+- Keep each expiry short and intentional (temporary exception only).
+- Remove entries as soon as upstream patches are available.
+- If an allowlist entry expires, treat CI failure as expected and refresh/remove deliberately in a follow-up PR.
+
 GitHub Actions also auto-labels pull requests by changed paths using `.github/workflows/labeler.yml` and `.github/labeler.yml`.
 Create repository labels once (auth, prisma, frontend, ci, docs, security) so the workflow can apply them.
 
@@ -99,7 +108,7 @@ In GitHub repository settings, protect the `main` branch with:
 - Require a pull request before merging.
 - Require at least 1 approval.
 - Require status checks to pass before merging.
-- Select required checks: `verify`, `CodeQL Analysis`, and `npm Audit (high+)`.
+- Select required checks: `verify`, `CodeQL Analysis`, and `npm Audit (policy gate)`.
 - Dismiss stale pull request approvals when new commits are pushed.
 - Restrict force pushes and prevent branch deletion.
 
