@@ -1,0 +1,47 @@
+auth:
+  - changed-files:
+      - any-glob-to-any-file:
+          - proxy.ts
+          - app/dashboard/**
+
+prisma:
+  - changed-files:
+      - any-glob-to-any-file:
+          - prisma/**
+          - prisma.config.ts
+          - lib/prisma.ts
+          - app/api/**
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - app/**/*.tsx
+          - app/**/*.ts
+          - app/**/*.css
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**
+          - package.json
+          - tsconfig.json
+          - eslint.config.mjs
+          - next.config.ts
+          - postcss.config.mjs
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - README.md
+          - CONTRIBUTING.md
+          - AGENTS.md
+          - .github/instructions/**
+          - .github/prompts/**
+          - .github/pull_request_template.md
+
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/CODEOWNERS
+          - proxy.ts
+          - .env.example

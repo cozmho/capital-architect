@@ -1,0 +1,55 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
+no-changes-template: "- No user-facing changes in this cycle."
+
+version-resolver:
+  default: patch
+  major:
+    labels:
+      - major
+  minor:
+    labels:
+      - minor
+  patch:
+    labels:
+      - patch
+      - auth
+      - prisma
+      - frontend
+      - ci
+      - docs
+      - security
+
+categories:
+  - title: "Auth and Routing"
+    labels:
+      - auth
+  - title: "Data and Prisma"
+    labels:
+      - prisma
+  - title: "Frontend"
+    labels:
+      - frontend
+  - title: "CI and Tooling"
+    labels:
+      - ci
+  - title: "Documentation"
+    labels:
+      - docs
+  - title: "Security and Governance"
+    labels:
+      - security
+
+exclude-labels:
+  - skip-changelog
+
+template: |
+  ## Summary
+
+  $CHANGES
+
+  ## Full Changelog
+
+  https://github.com/cozmho/capital-architect/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

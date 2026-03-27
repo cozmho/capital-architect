@@ -1,0 +1,120 @@
+name: Bug Report
+description: Report a defect with reproducible steps and verification evidence.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+
+        Before submitting, run:
+        - npm run lint
+        - npm run type-check
+        - npm run build
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Briefly describe the defect and expected behavior.
+      placeholder: The intake route returns 500 for valid payloads.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction Steps
+      description: Provide exact steps to reproduce from a clean start.
+      placeholder: |
+        1. Run npm install
+        2. Run npm run dev
+        3. POST /api/intake with payload ...
+        4. Observe 500 response
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      placeholder: API should return 200 with assigned tier.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      placeholder: API returns 500 with error message.
+    validations:
+      required: true
+
+  - type: textarea
+    id: command_output
+    attributes:
+      label: Verification Command Output
+      description: Paste relevant output from local verification.
+      placeholder: |
+        npm run lint:
+        ...
+
+        npm run type-check:
+        ...
+
+        npm run build:
+        ...
+      render: shell
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Local Checks
+      options:
+        - label: I ran npm run lint
+          required: true
+        - label: I ran npm run type-check
+          required: true
+        - label: I ran npm run build
+          required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit SHA or Branch
+      description: Provide the commit or branch where this issue occurs.
+      placeholder: main or abc1234
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Include OS, Node version, package manager, and any env details that matter.
+      placeholder: Windows 11, Node 22, npm 10, local .env with Supabase + Clerk values.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Suspected Scope
+      description: List files or areas likely involved.
+      placeholder: app/api/intake/route.ts, lib/prisma.ts, proxy.ts

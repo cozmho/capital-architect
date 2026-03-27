@@ -1,79 +1,149 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Capital Architect
 
-## Getting Started
+Capital Architect is a credit compliance and funding portal built on Next.js App Router with Clerk auth and Prisma over Supabase Postgres.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 App Router
+- TypeScript + React 19
+- Clerk for auth and role-aware dashboard access
+- Prisma 7 + Supabase Postgres
+- Tailwind CSS v4 + Lucide React
+
+## Quick Start
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Configure environment variables in `.env`:
+
+- `DATABASE_URL` (Supabase pooler, runtime queries)
+- `DIRECT_URL` (Supabase direct host, schema operations)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (required for Clerk-protected dashboard behavior)
+- `CLERK_SECRET_KEY` (required for Clerk-protected dashboard behavior)
+- `INTAKE_API_KEY` (optional but recommended for external intake calls)
+
+3. Start development:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` starts the dev server
+- `npm run lint` runs ESLint
+- `npm run type-check` runs TypeScript checks without emitting files
+- `npm run build` builds production output
+- `npm run start` runs the production server
 
-## Learn More
+## Project Layout
 
-To learn more about Next.js, take a look at the following resources:
+- `app/` App Router routes and layouts
+- `app/api/intake/route.ts` intake endpoint with tiering and idempotent upsert
+- `app/dashboard/*` role-specific dashboard views
+- `proxy.ts` dashboard protection and role redirects (no `middleware.ts`)
+- `lib/prisma.ts` Prisma runtime client singleton
+- `prisma/schema.prisma` core data models
+- `prisma.config.ts` Prisma CLI datasource resolution
+- `scripts/google-apps-script/intake-webhook.gs` Google Form bridge script
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Auth And Routing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Dashboard routes under `/dashboard/*` are protected in `proxy.ts`.
 
-## Deploy on Vercel
+- `/dashboard/admin` requires role `admin`
+- `/dashboard/closer` requires role `closer`
+- `/dashboard/setter` requires role `setter`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+When Clerk keys are placeholders or missing, the app degrades gracefully instead of crashing.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Intake API
 
-## Capital Architect Intake Webhook
+Endpoint: `POST /api/intake`
 
-This project includes a server intake endpoint at `POST /api/intake` that writes leads to Prisma and auto-assigns tiers.
+The endpoint:
 
-### Required env vars
+- Normalizes lead payload values
+- Assigns tier (`A`, `B`, `C`, or `CHECK_MANUALLY`)
+- Resolves intake source (`website`, `google`, `calendly`, `unknown`)
+- Upserts into Prisma using a stable deterministic lead id
 
-- `DATABASE_URL` (Supabase pooler)
-- `DIRECT_URL` (Supabase direct host)
-- `INTAKE_API_KEY` (optional but recommended)
-
-### Intake payload shape
+### Sample Payload
 
 ```json
 {
-	"leadName": "Acme Holdings",
-	"ficoBand": "720+",
-	"utilizationBand": "31-50%",
-	"bankruptcy": "No",
-	"recentLates": "No",
-	"sourceLeadId": "2026-03-27T20:00:00Z|Acme Holdings"
+  "leadName": "Acme Holdings",
+  "ficoBand": "720+",
+  "utilizationBand": "31-50%",
+  "bankruptcy": "No",
+  "recentLates": "No",
+  "sourceLeadId": "2026-03-27T20:00:00Z|Acme Holdings"
 }
 ```
 
-### Google Apps Script bridge
+### Local Intake Verification
 
-Use `scripts/google-apps-script/intake-webhook.gs` in your linked Form script project:
-
-1. Open Google Form -> Extensions -> Apps Script.
-2. Paste the file contents and set `INTAKE_API_URL` + `INTAKE_API_KEY`.
-3. Add an installable trigger for `onFormSubmit`.
-4. Submit a test form and verify the lead appears in Admin Dashboard.
-
-### Local verification
-
-1. Start app with `npm run dev`.
-2. Send a test request:
+1. Run the app: `npm run dev`
+2. Send a request:
 
 ```powershell
 Invoke-RestMethod -Uri "http://localhost:3000/api/intake" -Method Post -Headers @{"x-intake-key"="caparch_intake_local_2026"} -ContentType "application/json" -Body '{"leadName":"Test Capital LLC","ficoBand":"720+","utilizationBand":"31-50%","bankruptcy":"No","recentLates":"No","sourceLeadId":"local-test-1"}'
 ```
 
-3. Open `/dashboard/admin` and confirm the new lead row appears with Tier `A`.
+3. Confirm the lead appears in `/dashboard/admin`
+
+## Build Inconsistency Sweep
+
+Use this order when auditing build inconsistencies:
+
+1. Check workflow script and config drift:
+	- `package.json` scripts for `dev`, `lint`, `build`, `start`
+	- `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs`, `prisma.config.ts`
+2. Run verification commands:
+
+```bash
+npm run lint
+npm run type-check
+npm run build
+```
+
+3. Classify findings only after command evidence:
+	- Build-breaking: command fails
+	- Risky inconsistency: currently passes but likely CI or cross-env drift
+	- Documentation drift: docs do not match real behavior
+
+## Notes
+
+- This repository uses `proxy.ts` for route protection. Do not introduce `middleware.ts`.
+- Keep `.env` uncommitted and `.env.example` safe for sharing.
+
+## Recommended Branch Protection
+
+For `main`, enable branch protection and require:
+
+- Required status checks: `verify`, `CodeQL Analysis`, `npm Audit (high+)`
+- Pull request before merge
+- At least 1 approving review
+- Dismiss stale approvals when new commits are pushed
+- Block force pushes and branch deletion
+
+## Release Checklist (Maintainers)
+
+Use this flow when preparing a production release:
+
+1. Ensure required CI checks are passing on `main` (`verify`, `CodeQL Analysis`, `npm Audit (high+)`).
+2. Confirm PR labels are accurate (`auth`, `prisma`, `frontend`, `ci`, `docs`, `security`).
+3. If needed, apply version hint labels on PRs (`major`, `minor`, or `patch`).
+4. Open the latest draft release generated by `.github/workflows/release-drafter.yml`.
+5. Review category grouping and remove internal-only changes if needed.
+6. Publish the draft release with final title and notes.
+
+Optional:
+
+- Add `skip-changelog` to PRs that should be excluded from release notes.

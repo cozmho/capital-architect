@@ -1,0 +1,28 @@
+# Global default owner
+* @cozmho
+
+# Core workflow and policy files
+/.github/workflows/ @cozmho
+/.github/instructions/ @cozmho
+/.github/prompts/ @cozmho
+/.github/pull_request_template.md @cozmho
+/AGENTS.md @cozmho
+/README.md @cozmho
+/CONTRIBUTING.md @cozmho
+
+# Auth and routing critical paths
+/proxy.ts @cozmho
+/app/dashboard/ @cozmho
+
+# API and data layer
+/app/api/ @cozmho
+/lib/prisma.ts @cozmho
+/prisma/ @cozmho
+/prisma.config.ts @cozmho
+
+# Build and lint config
+/package.json @cozmho
+/tsconfig.json @cozmho
+/eslint.config.mjs @cozmho
+/next.config.ts @cozmho
+/postcss.config.mjs @cozmho
