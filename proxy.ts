@@ -58,17 +58,19 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
 
   await auth.protect();
 
+  const { sessionClaims } = await auth();
+
+  if (isClientRoute(req)) {
+    if (hasPaidMembership(sessionClaims)) return;
+    return NextResponse.redirect(new URL('/membership', req.url));
+  }
+
   let requiredRole: DashboardRole | null = null;
   if (isAdminRoute(req)) requiredRole = 'admin';
   if (isCloserRoute(req)) requiredRole = 'closer';
   if (isSetterRoute(req)) requiredRole = 'setter';
 
   if (!requiredRole) return;
-
-  const { sessionClaims } = await auth();
-  if (isClientRoute(req) && !hasPaidMembership(sessionClaims)) {
-    return NextResponse.redirect(new URL('/intake', req.url));
-  }
 
   const role = getSessionRole(sessionClaims);
 

@@ -7,10 +7,14 @@ const hasValidClerkPublishableKey = Boolean(publishableKey && !/x{8,}/i.test(pub
 export default async function Home() {
   const { sessionClaims } = hasValidClerkPublishableKey ? await auth() : { sessionClaims: null };
   const claims = (sessionClaims ?? {}) as {
-    metadata?: { role?: string };
-    publicMetadata?: { role?: string };
+    metadata?: { role?: string; plan?: string; paid?: boolean };
+    publicMetadata?: { role?: string; plan?: string; paid?: boolean };
   };
   const role = claims.metadata?.role ?? claims.publicMetadata?.role;
+  const plan = (claims.metadata?.plan ?? claims.publicMetadata?.plan ?? "").toLowerCase();
+  const paidFlag = claims.metadata?.paid ?? claims.publicMetadata?.paid;
+  const hasPaidMembership = paidFlag === true || ["paid", "pro", "premium", "member"].includes(plan);
+  const canAccessClientDashboard = hasPaidMembership;
   const canAccessCommandDashboard = role === "admin";
 
   return (
@@ -32,6 +36,21 @@ export default async function Home() {
             >
               Start Intake
             </Link>
+            {canAccessClientDashboard ? (
+              <Link
+                href="/dashboard/client"
+                className="inline-flex items-center justify-center rounded-xl border border-emerald-500/60 bg-emerald-500/15 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
+              >
+                Open Client Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/membership"
+                className="inline-flex items-center justify-center rounded-xl border border-amber-500/60 bg-amber-500/15 px-5 py-3 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/25"
+              >
+                Unlock Membership Dashboard
+              </Link>
+            )}
             {canAccessCommandDashboard ? (
               <Link
                 href="/dashboard/admin"
