@@ -2,6 +2,10 @@ import Link from "next/link";
 import { CheckCircle2, Crown, ShieldCheck } from "lucide-react";
 
 export default function MembershipPage() {
+  const checkoutUrl = process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL;
+  const bookingUrl = process.env.NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL;
+  const contactEmail = process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL ?? "support@capitalarchitect.com";
+
   return (
     <main className="min-h-screen bg-linear-to-br from-zinc-950 via-zinc-900 to-black px-6 py-10 text-zinc-100 lg:px-10">
       <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -18,12 +22,33 @@ export default function MembershipPage() {
             >
               Submit Free Intake
             </Link>
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-700"
-            >
-              Contact Team For Membership
-            </Link>
+            {checkoutUrl ? (
+              <a
+                href={checkoutUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-xl border border-emerald-500/60 bg-emerald-500/20 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/30"
+              >
+                Start Membership Checkout
+              </a>
+            ) : (
+              <a
+                href={`mailto:${contactEmail}?subject=Capital%20Architect%20Membership`}
+                className="inline-flex items-center justify-center rounded-xl border border-emerald-500/60 bg-emerald-500/20 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/30"
+              >
+                Request Membership Access
+              </a>
+            )}
+            {bookingUrl ? (
+              <a
+                href={bookingUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-700"
+              >
+                Book Membership Call
+              </a>
+            ) : null}
           </div>
         </header>
 
