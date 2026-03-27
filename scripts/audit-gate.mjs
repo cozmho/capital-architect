@@ -2,19 +2,104 @@ import { spawnSync } from "node:child_process";
 
 // Temporary allowlist for upstream advisories in Prisma toolchain packages.
 // Remove entries as soon as upstream patches are available.
-const ALLOWED_GHSA = new Set([
-  "GHSA-wc8c-qw6v-h7f6",
-  "GHSA-38f7-945m-qr2g",
-  "GHSA-9r54-q6cx-xmh5",
-  "GHSA-6wqw-2p9w-4vw4",
-  "GHSA-r354-f388-2fhh",
-  "GHSA-w332-q679-j88p",
-  "GHSA-gq3j-xvxp-8hrf",
-  "GHSA-5pq2-9x2x-5p6w",
-  "GHSA-p6xx-57qc-3wxr",
-  "GHSA-q5qw-h33p-qvwr",
-  "GHSA-v8w9-8mx6-g223",
-]);
+const ALLOWLIST_EXPIRES_ON = "2026-06-30";
+
+const ALLOWED_ADVISORIES = [
+  {
+    ghsa: "GHSA-wc8c-qw6v-h7f6",
+    package: "@hono/node-server",
+    reason: "Transitive through Prisma CLI toolchain.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-38f7-945m-qr2g",
+    package: "effect",
+    reason: "Transitive through Prisma config tooling.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-9r54-q6cx-xmh5",
+    package: "hono",
+    reason: "Transitive through Prisma dev dependency graph.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-6wqw-2p9w-4vw4",
+    package: "hono",
+    reason: "Transitive through Prisma dev dependency graph.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-r354-f388-2fhh",
+    package: "hono",
+    reason: "Transitive through Prisma dev dependency graph.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-w332-q679-j88p",
+    package: "hono",
+    reason: "Transitive through Prisma dev dependency graph.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-gq3j-xvxp-8hrf",
+    package: "hono",
+    reason: "Transitive through Prisma dev dependency graph.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-5pq2-9x2x-5p6w",
+    package: "hono",
+    reason: "Transitive through Prisma dev dependency graph.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-p6xx-57qc-3wxr",
+    package: "hono",
+    reason: "Transitive through Prisma dev dependency graph.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-q5qw-h33p-qvwr",
+    package: "hono",
+    reason: "Transitive through Prisma dev dependency graph.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+  {
+    ghsa: "GHSA-v8w9-8mx6-g223",
+    package: "hono",
+    reason: "Transitive through Prisma dev dependency graph.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
+];
+
+function parseDateOnly(input) {
+  const date = new Date(`${input}T00:00:00Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isAllowlisted(finding) {
+  return ALLOWED_ADVISORIES.some((entry) => {
+    if (entry.ghsa !== finding.ghsa) return false;
+
+    const expiresAt = parseDateOnly(entry.expiresOn);
+    if (!expiresAt) return false;
+
+    const now = new Date();
+    if (now > expiresAt) return false;
+
+    return entry.package === finding.package;
+  });
+}
+
+function getExpiredAllowlistEntries() {
+  const now = new Date();
+  return ALLOWED_ADVISORIES.filter((entry) => {
+    const expiresAt = parseDateOnly(entry.expiresOn);
+    if (!expiresAt) return true;
+    return now > expiresAt;
+  });
+}
 
 const result = spawnSync("npm", ["audit", "--json"], {
   encoding: "utf8",
@@ -62,7 +147,16 @@ if (findings.length === 0) {
   process.exit(0);
 }
 
-const unallowed = findings.filter((f) => !ALLOWED_GHSA.has(f.ghsa));
+const expiredAllowlist = getExpiredAllowlistEntries();
+if (expiredAllowlist.length > 0) {
+  console.error("audit-gate: allowlist contains expired entries.");
+  for (const entry of expiredAllowlist) {
+    console.error(`- ${entry.ghsa} | ${entry.package} | expired: ${entry.expiresOn}`);
+  }
+  process.exit(1);
+}
+
+const unallowed = findings.filter((f) => !isAllowlisted(f));
 
 if (unallowed.length === 0) {
   console.log("audit-gate: only allowlisted high/critical advisories detected.");
