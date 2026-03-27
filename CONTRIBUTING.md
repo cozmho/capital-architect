@@ -10,6 +10,8 @@ Thanks for contributing. This project uses a strict verify-first workflow for bu
 npm install
 ```
 
+`postinstall` regenerates Prisma client types automatically via `npm run prisma:generate`.
+
 2. Add local environment values in `.env`:
 
 - `DATABASE_URL`

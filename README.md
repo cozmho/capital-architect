@@ -39,6 +39,7 @@ npm run dev
 - `npm run dev` starts the dev server
 - `npm run lint` runs ESLint
 - `npm run type-check` runs TypeScript checks without emitting files
+- `npm run prisma:generate` regenerates Prisma client types
 - `npm run build` builds production output
 - `npm run start` runs the production server
 
