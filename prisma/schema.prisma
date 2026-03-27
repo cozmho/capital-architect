@@ -12,3 +12,13 @@ model User {
   role      String   @default("SETTER")
   createdAt DateTime @default(now())
 }
+
+model Lead {
+  id           String   @id @default(cuid())
+  businessName String
+  tier         String   @default("B")
+  adb          Int
+  nsfs         Int
+  status       String   @default("PENDING_DOCS")
+  createdAt    DateTime @default(now())
+}
