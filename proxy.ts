@@ -13,6 +13,7 @@ const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
 const isAdminRoute = createRouteMatcher(['/dashboard/admin(.*)']);
 const isCloserRoute = createRouteMatcher(['/dashboard/closer(.*)']);
 const isSetterRoute = createRouteMatcher(['/dashboard/setter(.*)']);
+const isClientRoute = createRouteMatcher(['/dashboard/client(.*)']);
 
 type DashboardRole = 'admin' | 'closer' | 'setter';
 
@@ -35,6 +36,21 @@ const getSessionRole = (sessionClaims: unknown): DashboardRole | null => {
   return null;
 };
 
+const hasPaidMembership = (sessionClaims: unknown): boolean => {
+  if (!sessionClaims || typeof sessionClaims !== 'object') return false;
+
+  const claims = sessionClaims as {
+    metadata?: { plan?: string; paid?: boolean };
+    publicMetadata?: { plan?: string; paid?: boolean };
+  };
+
+  const plan = (claims.metadata?.plan ?? claims.publicMetadata?.plan ?? '').toLowerCase();
+  const paidFlag = claims.metadata?.paid ?? claims.publicMetadata?.paid;
+
+  if (paidFlag === true) return true;
+  return ['paid', 'pro', 'premium', 'member'].includes(plan);
+};
+
 const passthroughProxy = () => NextResponse.next();
 
 const clerkProxy = clerkMiddleware(async (auth, req) => {
@@ -50,6 +66,10 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
   if (!requiredRole) return;
 
   const { sessionClaims } = await auth();
+  if (isClientRoute(req) && !hasPaidMembership(sessionClaims)) {
+    return NextResponse.redirect(new URL('/intake', req.url));
+  }
+
   const role = getSessionRole(sessionClaims);
 
   if (role === requiredRole) return;

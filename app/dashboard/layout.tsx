@@ -1,33 +1,91 @@
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { BriefcaseBusiness, Target, Users } from "lucide-react";
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
 const hasValidClerkPublishableKey = Boolean(publishableKey && !/x{8,}/i.test(publishableKey));
 
-const navItems = [
+type DashboardRole = "admin" | "closer" | "setter";
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof Users;
+  requiresRole?: DashboardRole;
+  requiresPaid?: boolean;
+};
+
+const navItems: NavItem[] = [
   {
     href: "/dashboard/admin",
     label: "Admin Command",
     icon: BriefcaseBusiness,
+    requiresRole: "admin",
   },
   {
     href: "/dashboard/closer",
     label: "Closer Pipeline",
     icon: Target,
+    requiresRole: "closer",
   },
   {
     href: "/dashboard/setter",
     label: "Setter Queue",
     icon: Users,
+    requiresRole: "setter",
   },
-] as const;
+  {
+    href: "/dashboard/client",
+    label: "Client Portal",
+    icon: Users,
+    requiresPaid: true,
+  },
+];
 
-export default function DashboardLayout({
+function getRole(sessionClaims: unknown): DashboardRole | null {
+  if (!sessionClaims || typeof sessionClaims !== "object") return null;
+
+  const claims = sessionClaims as {
+    metadata?: { role?: string };
+    publicMetadata?: { role?: string };
+  };
+
+  const role = claims.metadata?.role ?? claims.publicMetadata?.role;
+  if (role === "admin" || role === "closer" || role === "setter") return role;
+  return null;
+}
+
+function hasPaidMembership(sessionClaims: unknown): boolean {
+  if (!sessionClaims || typeof sessionClaims !== "object") return false;
+
+  const claims = sessionClaims as {
+    metadata?: { plan?: string; paid?: boolean };
+    publicMetadata?: { plan?: string; paid?: boolean };
+  };
+
+  const plan = (claims.metadata?.plan ?? claims.publicMetadata?.plan ?? "").toLowerCase();
+  const paidFlag = claims.metadata?.paid ?? claims.publicMetadata?.paid;
+
+  if (paidFlag === true) return true;
+  return ["paid", "pro", "premium", "member"].includes(plan);
+}
+
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { sessionClaims } = hasValidClerkPublishableKey ? await auth() : { sessionClaims: null };
+  const role = getRole(sessionClaims);
+  const paidMember = hasPaidMembership(sessionClaims);
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.requiresRole && role !== item.requiresRole) return false;
+    if (item.requiresPaid && !paidMember) return false;
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="mx-auto flex min-h-screen w-full max-w-400">
@@ -38,7 +96,7 @@ export default function DashboardLayout({
           </div>
 
           <nav className="mt-8 space-y-2">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const Icon = item.icon;
 
               return (

@@ -71,10 +71,12 @@ export default function IntakePage() {
         throw new Error(data.error || "Submission failed");
       }
 
-      const tierMessage = data.assignedTier ? `Assigned Tier: ${data.assignedTier}` : "Submission complete.";
+      const tierMessage = data.assignedTier
+        ? "Status: Intake received. A specialist will follow up with your next steps."
+        : "Status: Intake received.";
       setSubmission({
         status: "success",
-        message: `Thank you. Your intake has been received. ${tierMessage}`,
+        message: `Thank you. ${tierMessage}`,
       });
       setLeadName("");
       setFicoBand("");
