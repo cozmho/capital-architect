@@ -1,5 +1,5 @@
 import { Activity, BadgeDollarSign, Crown, TrendingUp, Users } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { getPrismaClient } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +20,7 @@ function formatAdb(adb: number): string {
 }
 
 export default async function AdminDashboardPage() {
+  const prisma = getPrismaClient();
   const [totalLeads, tierALeads, tierBLeads, recentPipeline] = await Promise.all([
     prisma.lead.count(),
     prisma.lead.count({ where: { tier: "A" } }),

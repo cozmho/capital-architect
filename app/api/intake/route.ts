@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 
-import { prisma } from "@/lib/prisma";
+import { getPrismaClient } from "@/lib/prisma";
 
 type IntakePayload = {
   leadName?: string;
@@ -131,6 +131,7 @@ function isSameOriginBrowserRequest(request: Request): boolean {
 }
 
 export async function POST(request: Request) {
+  const prisma = getPrismaClient();
   const configuredApiKey = process.env.INTAKE_API_KEY;
   const requestApiKey = request.headers.get("x-intake-key");
 
