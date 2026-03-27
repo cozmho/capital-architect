@@ -79,7 +79,9 @@ The workflow is defined in `.github/workflows/ci.yml`.
 Security scanning runs via `.github/workflows/security.yml` on pull requests, pushes to `main`, and a weekly schedule.
 
 - Code scanning: CodeQL (`javascript-typescript`)
-- Dependency policy gate: `npm audit --audit-level=high` (fails on high/critical findings)
+- Dependency policy gate: `npm run audit:gate`
+
+`audit:gate` blocks on non-allowlisted high/critical advisories and allows a temporary, explicit GHSA allowlist for known upstream issues.
 
 GitHub Actions also auto-labels pull requests by changed paths using `.github/workflows/labeler.yml` and `.github/labeler.yml`.
 Create repository labels once (auth, prisma, frontend, ci, docs, security) so the workflow can apply them.
