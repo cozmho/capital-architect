@@ -34,3 +34,35 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Production smoke check
+        env:
+          INTAKE_API_KEY: ci_smoke_key
+          PORT: 3000
+        run: |
+          npm run start > /tmp/next-start.log 2>&1 &
+          SERVER_PID=$!
+
+          cleanup() {
+            kill "$SERVER_PID" || true
+          }
+          trap cleanup EXIT
+
+          for i in {1..30}; do
+            if curl -sS "http://127.0.0.1:3000/" > /dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+          curl -fsS "http://127.0.0.1:3000/" > /dev/null
+
+          intake_status=$(curl -sS -o /dev/null -w "%{http_code}" \
+            -X POST "http://127.0.0.1:3000/api/intake" \
+            -H "Content-Type: application/json" \
+            -d '{"leadName":"Smoke Test"}')
+
+          if [ "$intake_status" != "401" ]; then
+            echo "Expected /api/intake smoke status 401, got $intake_status"
+            exit 1
+          fi
