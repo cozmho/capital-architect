@@ -56,10 +56,10 @@ jobs:
 
           curl -fsS "http://127.0.0.1:3000/" > /dev/null
 
-          intake_status=$(curl -sS -o /dev/null -w "%{http_code}" \
-            "http://127.0.0.1:3000/api/intake")
+          health_status=$(curl -sS -o /dev/null -w "%{http_code}" \
+            "http://127.0.0.1:3000/api/health")
 
-          if [ "$intake_status" != "405" ]; then
-            echo "Expected /api/intake smoke status 405, got $intake_status"
+          if [ "$health_status" != "200" ]; then
+            echo "Expected /api/health smoke status 200, got $health_status"
             exit 1
           fi
