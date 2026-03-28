@@ -1,6 +1,8 @@
 import { Activity, ClipboardList, FileClock, FolderKanban, Users } from "lucide-react";
 import { getPrismaClient } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 function priorityFromAdb(adb: number): "High" | "Medium" {
   return adb >= 80 ? "High" : "Medium";
 }

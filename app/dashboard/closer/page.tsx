@@ -1,6 +1,8 @@
 import { Activity, ClipboardCheck, Crown, Handshake, TrendingUp } from "lucide-react";
 import { getPrismaClient } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 function formatDate(value: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
