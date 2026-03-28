@@ -12,7 +12,7 @@ npm install
 
 `postinstall` regenerates Prisma client types automatically via `npm run prisma:generate`.
 
-2. Add local environment values in `.env`:
+1. Add local environment values in `.env`:
 
 - `DATABASE_URL`
 - `DIRECT_URL`
@@ -20,7 +20,7 @@ npm install
 - `CLERK_SECRET_KEY`
 - `INTAKE_API_KEY` (optional for local browser-only testing)
 
-3. Start local development:
+1. Start local development:
 
 ```bash
 npm run dev
@@ -43,7 +43,7 @@ Before opening a PR, run this exact sequence:
 - Confirm `package.json` scripts still match real workflow (`dev`, `lint`, `build`, `start`).
 - Confirm these files do not conflict: `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs`, `prisma.config.ts`.
 
-2. Run verification commands:
+1. Run verification commands:
 
 ```bash
 npm run lint
@@ -51,7 +51,7 @@ npm run type-check
 npm run build
 ```
 
-3. Classify any issue you find:
+1. Classify any issue you find:
 
 - Build-breaking: command failure in lint/build/type generation.
 - Risky inconsistency: currently passes but likely CI or cross-env drift.

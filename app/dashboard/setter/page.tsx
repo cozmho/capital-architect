@@ -1,51 +1,78 @@
 import { Activity, ClipboardList, FileClock, FolderKanban, Users } from "lucide-react";
+import { getPrismaClient } from "@/lib/prisma";
 
-const setterStats = [
-  {
-    title: "Tier B Leads",
-    value: "118",
-    delta: "+17 in active outreach",
-    icon: Users,
-    tone: "from-amber-400/20 to-amber-600/5",
-  },
-  {
-    title: "$1,500 Intensives Sold",
-    value: "11",
-    delta: "+3 closed this week",
-    icon: FolderKanban,
-    tone: "from-cyan-400/20 to-cyan-600/5",
-  },
-  {
-    title: "Documents Pending",
-    value: "26",
-    delta: "Follow-up needed today",
-    icon: FileClock,
-    tone: "from-rose-400/20 to-rose-600/5",
-  },
-] as const;
+function priorityFromAdb(adb: number): "High" | "Medium" {
+  return adb >= 80 ? "High" : "Medium";
+}
 
-const documentTasks = [
-  {
-    client: "Lighthouse Property Group",
-    task: "Collect latest 3 months of business bank statements",
-    due: "Today, 4:00 PM",
-    priority: "High",
-  },
-  {
-    client: "Granite Point Holdings",
-    task: "Request front and back ID copy from signer",
-    due: "Tomorrow, 11:00 AM",
-    priority: "High",
-  },
-  {
-    client: "Mariner Growth Partners",
-    task: "Confirm missing personal bank statement PDF",
-    due: "Tomorrow, 3:00 PM",
-    priority: "Medium",
-  },
-] as const;
+function nextSetterTask(status: string): string {
+  if (status === "PENDING_DOCS") return "Collect required business docs";
+  if (status.startsWith("INTAKE_")) return "Begin qualification outreach";
+  return "Review lead file and update pipeline";
+}
 
-export default function SetterDashboardPage() {
+export default async function SetterDashboardPage() {
+  const prisma = getPrismaClient();
+
+  const [tierBLeadCount, pendingDocsCount, outreachQueueCount, setterQueue] = await Promise.all([
+    prisma.lead.count({ where: { tier: "B" } }),
+    prisma.lead.count({
+      where: {
+        tier: { in: ["B", "CHECK_MANUALLY"] },
+        status: "PENDING_DOCS",
+      },
+    }),
+    prisma.lead.count({
+      where: {
+        tier: "B",
+        status: {
+          in: ["INTAKE_WEBSITE", "INTAKE_GOOGLE", "INTAKE_CALENDLY", "INTAKE_FORM", "PENDING_DOCS"],
+        },
+      },
+    }),
+    prisma.lead.findMany({
+      where: {
+        tier: { in: ["B", "CHECK_MANUALLY"] },
+        status: {
+          in: ["PENDING_DOCS", "INTAKE_WEBSITE", "INTAKE_GOOGLE", "INTAKE_CALENDLY", "INTAKE_FORM"],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        businessName: true,
+        adb: true,
+        createdAt: true,
+        status: true,
+      },
+    }),
+  ]);
+
+  const setterStats = [
+    {
+      title: "Tier B Leads",
+      value: String(tierBLeadCount),
+      delta: "Live count from Supabase",
+      icon: Users,
+      tone: "from-amber-400/20 to-amber-600/5",
+    },
+    {
+      title: "Outreach Queue",
+      value: String(outreachQueueCount),
+      delta: "B tier leads in active setter pipeline",
+      icon: FolderKanban,
+      tone: "from-cyan-400/20 to-cyan-600/5",
+    },
+    {
+      title: "Documents Pending",
+      value: String(pendingDocsCount),
+      delta: "Follow-up needed to unblock closer handoff",
+      icon: FileClock,
+      tone: "from-rose-400/20 to-rose-600/5",
+    },
+  ] as const;
+
   return (
     <main className="min-h-screen bg-linear-to-br from-zinc-950 via-zinc-900 to-black text-zinc-100">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-10 lg:px-10">
@@ -91,26 +118,35 @@ export default function SetterDashboardPage() {
             </div>
           </div>
           <ul className="space-y-3">
-            {documentTasks.map((task) => (
-              <li key={task.client} className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm text-zinc-300">{task.client}</p>
-                    <p className="mt-1 text-base font-medium text-white">{task.task}</p>
-                    <p className="mt-2 text-sm text-zinc-400">Due: {task.due}</p>
-                  </div>
-                  <span
-                    className={`rounded-md px-2 py-1 text-xs font-medium ${
-                      task.priority === "High"
-                        ? "border border-rose-600/50 bg-rose-500/10 text-rose-300"
-                        : "border border-amber-600/50 bg-amber-500/10 text-amber-300"
-                    }`}
-                  >
-                    {task.priority}
-                  </span>
-                </div>
+            {setterQueue.length ? (
+              setterQueue.map((task) => {
+                const priority = priorityFromAdb(task.adb);
+                return (
+                  <li key={task.id} className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm text-zinc-300">{task.businessName}</p>
+                        <p className="mt-1 text-base font-medium text-white">{nextSetterTask(task.status)}</p>
+                        <p className="mt-2 text-sm text-zinc-400">Status: {task.status}</p>
+                      </div>
+                      <span
+                        className={`rounded-md px-2 py-1 text-xs font-medium ${
+                          priority === "High"
+                            ? "border border-rose-600/50 bg-rose-500/10 text-rose-300"
+                            : "border border-amber-600/50 bg-amber-500/10 text-amber-300"
+                        }`}
+                      >
+                        {priority}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })
+            ) : (
+              <li className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4 text-sm text-zinc-400">
+                No setter follow-up tasks are pending.
               </li>
-            ))}
+            )}
           </ul>
         </section>
       </section>

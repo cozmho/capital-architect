@@ -1,9 +1,11 @@
+# Pull Request
+
 ## Summary
 
 Describe the change in 2-5 bullets.
 
-- 
-- 
+- _Add summary point._
+- _Add summary point._
 
 ## Change Type
 
@@ -26,7 +28,7 @@ Classify this PR:
 
 If applicable, add short evidence:
 
-- 
+- _Add evidence if needed._
 
 ## Verification
 
@@ -50,7 +52,7 @@ npm run build
 
 Notes:
 
-- 
+- _Add routing/auth impact notes if applicable._
 
 ## Prisma / Data Impact
 
@@ -60,7 +62,7 @@ Notes:
 
 Notes:
 
-- 
+- _Add Prisma/data notes if applicable._
 
 ## Documentation
 
@@ -81,4 +83,4 @@ Notes:
 
 Risk notes / rollback plan:
 
-- 
+- _Add rollback notes if applicable._

@@ -18,7 +18,7 @@ Capital Architect is a credit compliance and funding portal built on Next.js App
 npm install
 ```
 
-2. Configure environment variables in `.env`:
+1. Configure environment variables in `.env`:
 
 - `DATABASE_URL` (Supabase pooler, runtime queries)
 - `DIRECT_URL` (Supabase direct host, schema operations)
@@ -29,13 +29,13 @@ npm install
 - `NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL` (optional; secondary booking action on `/membership`)
 - `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.com`)
 
-3. Start development:
+1. Start development:
 
 ```bash
 npm run dev
 ```
 
-4. Open http://localhost:3000
+1. Open <http://localhost:3000>
 
 ## Scripts
 
@@ -106,10 +106,12 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/intake" -Method Post -Headers 
 
 Use this order when auditing build inconsistencies:
 
-1. Check workflow script and config drift:
-	- `package.json` scripts for `dev`, `lint`, `build`, `start`
-	- `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs`, `prisma.config.ts`
-2. Run verification commands:
+1. Check workflow script and config drift.
+
+`package.json` scripts should match `dev`, `lint`, `build`, and `start`.
+`tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs`, and `prisma.config.ts` should not conflict.
+
+1. Run verification commands.
 
 ```bash
 npm run lint
@@ -117,10 +119,11 @@ npm run type-check
 npm run build
 ```
 
-3. Classify findings only after command evidence:
-	- Build-breaking: command fails
-	- Risky inconsistency: currently passes but likely CI or cross-env drift
-	- Documentation drift: docs do not match real behavior
+1. Classify findings only after command evidence.
+
+Build-breaking means a command fails.
+Risky inconsistency means checks pass now but likely drift in CI or cross-environment execution.
+Documentation drift means docs do not match behavior.
 
 ## Notes
 

@@ -1,51 +1,78 @@
 import { Activity, ClipboardCheck, Crown, Handshake, TrendingUp } from "lucide-react";
+import { getPrismaClient } from "@/lib/prisma";
 
-const closerStats = [
-  {
-    title: "Tier A Leads",
-    value: "32",
-    delta: "+6 hot this week",
-    icon: Crown,
-    tone: "from-emerald-400/20 to-emerald-600/5",
-  },
-  {
-    title: "Strategy Calls Booked",
-    value: "14",
-    delta: "+4 from yesterday",
-    icon: Handshake,
-    tone: "from-cyan-400/20 to-cyan-600/5",
-  },
-  {
-    title: "Contracts Out",
-    value: "9",
-    delta: "3 awaiting signatures",
-    icon: ClipboardCheck,
-    tone: "from-amber-400/20 to-amber-600/5",
-  },
-] as const;
+function formatDate(value: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(value);
+}
 
-const fundingReviewLeads = [
-  {
-    lead: "Orion Crest Ventures",
-    amount: "$1.1M",
-    callDate: "Mar 25, 2026",
-    status: "Ready for review",
-  },
-  {
-    lead: "Bluehaven Equity Group",
-    amount: "$860K",
-    callDate: "Mar 26, 2026",
-    status: "Ready for review",
-  },
-  {
-    lead: "Summit Harbor Capital",
-    amount: "$740K",
-    callDate: "Mar 27, 2026",
-    status: "Ready for review",
-  },
-] as const;
+export default async function CloserDashboardPage() {
+  const prisma = getPrismaClient();
 
-export default function CloserDashboardPage() {
+  const [tierALeadCount, intakeReadyCount, fundedCount, fundingReviewLeads] = await Promise.all([
+    prisma.lead.count({ where: { tier: "A" } }),
+    prisma.lead.count({
+      where: {
+        tier: "A",
+        status: {
+          in: ["INTAKE_WEBSITE", "INTAKE_GOOGLE", "INTAKE_CALENDLY", "INTAKE_FORM", "PENDING_REVIEW"],
+        },
+      },
+    }),
+    prisma.lead.count({
+      where: {
+        tier: "A",
+        status: {
+          in: ["CONTRACT_SENT", "FUNDED", "CLOSED_WON"],
+        },
+      },
+    }),
+    prisma.lead.findMany({
+      where: {
+        tier: "A",
+        status: {
+          in: ["INTAKE_WEBSITE", "INTAKE_GOOGLE", "INTAKE_CALENDLY", "INTAKE_FORM", "PENDING_DOCS", "PENDING_REVIEW"],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        businessName: true,
+        adb: true,
+        createdAt: true,
+        status: true,
+      },
+    }),
+  ]);
+
+  const closerStats = [
+    {
+      title: "Tier A Leads",
+      value: String(tierALeadCount),
+      delta: "Live count from Supabase",
+      icon: Crown,
+      tone: "from-emerald-400/20 to-emerald-600/5",
+    },
+    {
+      title: "Ready For Review",
+      value: String(intakeReadyCount),
+      delta: "Intake-qualified A tier leads",
+      icon: Handshake,
+      tone: "from-cyan-400/20 to-cyan-600/5",
+    },
+    {
+      title: "Contracts/Funded",
+      value: String(fundedCount),
+      delta: "A tier leads in closing stages",
+      icon: ClipboardCheck,
+      tone: "from-amber-400/20 to-amber-600/5",
+    },
+  ] as const;
+
   return (
     <main className="min-h-screen bg-linear-to-br from-zinc-950 via-zinc-900 to-black text-zinc-100">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-10 lg:px-10">
@@ -95,24 +122,32 @@ export default function CloserDashboardPage() {
               <thead>
                 <tr className="border-b border-zinc-800 text-zinc-400">
                   <th className="py-3 pr-4 font-medium">Lead</th>
-                  <th className="py-3 pr-4 font-medium">Potential Funding</th>
-                  <th className="py-3 pr-4 font-medium">Strategy Call</th>
+                  <th className="py-3 pr-4 font-medium">ADB Signal</th>
+                  <th className="py-3 pr-4 font-medium">Intake Date</th>
                   <th className="py-3 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {fundingReviewLeads.map((item) => (
-                  <tr key={item.lead} className="border-b border-zinc-900/70 text-zinc-200">
-                    <td className="py-3 pr-4">{item.lead}</td>
-                    <td className="py-3 pr-4">{item.amount}</td>
-                    <td className="py-3 pr-4">{item.callDate}</td>
-                    <td className="py-3">
-                      <span className="rounded-md border border-emerald-600/40 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-300">
-                        {item.status}
-                      </span>
+                {fundingReviewLeads.length ? (
+                  fundingReviewLeads.map((item) => (
+                    <tr key={item.id} className="border-b border-zinc-900/70 text-zinc-200">
+                      <td className="py-3 pr-4">{item.businessName}</td>
+                      <td className="py-3 pr-4">{item.adb}%</td>
+                      <td className="py-3 pr-4">{formatDate(item.createdAt)}</td>
+                      <td className="py-3">
+                        <span className="rounded-md border border-emerald-600/40 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-300">
+                          {item.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="py-6 text-zinc-400" colSpan={4}>
+                      No Tier A leads are currently ready for funding review.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
