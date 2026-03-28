@@ -5,6 +5,12 @@ import { BriefcaseBusiness, Target, Users } from "lucide-react";
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
 const hasValidClerkPublishableKey = Boolean(publishableKey && !/x{8,}/i.test(publishableKey));
+const godModeUserIds = new Set(
+  (process.env.GOD_MODE_USER_IDS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
 
 type DashboardRole = "admin" | "closer" | "setter";
 
@@ -18,8 +24,8 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    href: "/dashboard/admin",
-    label: "Admin Command",
+    href: "/dashboard/god-mode",
+    label: "God Mode",
     icon: BriefcaseBusiness,
     requiresRole: "admin",
   },
@@ -76,12 +82,16 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { sessionClaims } = hasValidClerkPublishableKey ? await auth() : { sessionClaims: null };
+  const { sessionClaims, userId } = hasValidClerkPublishableKey
+    ? await auth()
+    : { sessionClaims: null, userId: null };
   const role = getRole(sessionClaims);
   const paidMember = hasPaidMembership(sessionClaims);
+  const hasGodModeAccess = role === "admin" || Boolean(userId && godModeUserIds.has(userId));
 
   const visibleNavItems = navItems.filter((item) => {
-    if (item.requiresRole && role !== item.requiresRole) return false;
+    if (item.requiresRole === "admin" && !hasGodModeAccess) return false;
+    if (item.requiresRole && item.requiresRole !== "admin" && role !== item.requiresRole) return false;
     if (item.requiresPaid && !paidMember) return false;
     return true;
   });

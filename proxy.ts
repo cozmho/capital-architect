@@ -11,16 +11,29 @@ const hasValidClerkKeys = (() => {
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
 const isAdminRoute = createRouteMatcher(['/dashboard/admin(.*)']);
+const isGodModeRoute = createRouteMatcher(['/dashboard/god-mode(.*)']);
 const isCloserRoute = createRouteMatcher(['/dashboard/closer(.*)']);
 const isSetterRoute = createRouteMatcher(['/dashboard/setter(.*)']);
 const isClientRoute = createRouteMatcher(['/dashboard/client(.*)']);
 
+const godModeUserIds = new Set(
+  (process.env.GOD_MODE_USER_IDS ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
+
 type DashboardRole = 'admin' | 'closer' | 'setter';
 
 const roleHome: Record<DashboardRole, string> = {
-  admin: '/dashboard/admin',
+  admin: '/dashboard/god-mode',
   closer: '/dashboard/closer',
   setter: '/dashboard/setter',
+};
+
+const hasGodModeOverride = (userId: string | null | undefined): boolean => {
+  if (!userId) return false;
+  return godModeUserIds.has(userId);
 };
 
 const getSessionRole = (sessionClaims: unknown): DashboardRole | null => {
@@ -58,7 +71,7 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
 
   await auth.protect();
 
-  const { sessionClaims } = await auth();
+  const { sessionClaims, userId } = await auth();
 
   if (isClientRoute(req)) {
     if (hasPaidMembership(sessionClaims)) return;
@@ -66,13 +79,15 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
   }
 
   let requiredRole: DashboardRole | null = null;
-  if (isAdminRoute(req)) requiredRole = 'admin';
+  if (isAdminRoute(req) || isGodModeRoute(req)) requiredRole = 'admin';
   if (isCloserRoute(req)) requiredRole = 'closer';
   if (isSetterRoute(req)) requiredRole = 'setter';
 
   if (!requiredRole) return;
 
   const role = getSessionRole(sessionClaims);
+
+  if (requiredRole === 'admin' && hasGodModeOverride(userId)) return;
 
   if (role === requiredRole) return;
 

@@ -25,6 +25,7 @@ npm install
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (required for Clerk-protected dashboard behavior)
 - `CLERK_SECRET_KEY` (required for Clerk-protected dashboard behavior)
 - `INTAKE_API_KEY` (optional but recommended for external intake calls)
+- `GOD_MODE_USER_IDS` (optional; comma-separated Clerk user IDs granted admin/god-mode access override)
 - `NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL` (optional; primary checkout action on `/membership`)
 - `NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL` (optional; secondary booking action on `/membership`)
 - `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.com`)
@@ -66,6 +67,8 @@ Dashboard routes under `/dashboard/*` are protected in `proxy.ts`.
 - `/dashboard/setter` requires role `setter`
 
 When Clerk keys are placeholders or missing, the app degrades gracefully instead of crashing.
+
+For owner access, `/dashboard/god-mode` accepts either role `admin` from Clerk metadata or a user ID listed in `GOD_MODE_USER_IDS`.
 
 ## Intake API
 

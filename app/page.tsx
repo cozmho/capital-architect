@@ -3,9 +3,17 @@ import { auth } from "@clerk/nextjs/server";
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
 const hasValidClerkPublishableKey = Boolean(publishableKey && !/x{8,}/i.test(publishableKey));
+const godModeUserIds = new Set(
+  (process.env.GOD_MODE_USER_IDS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
 
 export default async function Home() {
-  const { sessionClaims } = hasValidClerkPublishableKey ? await auth() : { sessionClaims: null };
+  const { sessionClaims, userId } = hasValidClerkPublishableKey
+    ? await auth()
+    : { sessionClaims: null, userId: null };
   const claims = (sessionClaims ?? {}) as {
     metadata?: { role?: string; plan?: string; paid?: boolean };
     publicMetadata?: { role?: string; plan?: string; paid?: boolean };
@@ -14,8 +22,9 @@ export default async function Home() {
   const plan = (claims.metadata?.plan ?? claims.publicMetadata?.plan ?? "").toLowerCase();
   const paidFlag = claims.metadata?.paid ?? claims.publicMetadata?.paid;
   const hasPaidMembership = paidFlag === true || ["paid", "pro", "premium", "member"].includes(plan);
+  const hasGodModeOverride = Boolean(userId && godModeUserIds.has(userId));
   const canAccessClientDashboard = hasPaidMembership;
-  const canAccessCommandDashboard = role === "admin";
+  const canAccessCommandDashboard = role === "admin" || hasGodModeOverride;
 
   return (
     <main className="min-h-screen bg-linear-to-br from-zinc-950 via-zinc-900 to-black px-6 py-10 text-zinc-100 lg:px-10">
@@ -53,10 +62,10 @@ export default async function Home() {
             )}
             {canAccessCommandDashboard ? (
               <Link
-                href="/dashboard/admin"
+                href="/dashboard/god-mode"
                 className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-700"
               >
-                Open Command Dashboard
+                Enter God Mode
               </Link>
             ) : null}
           </div>
