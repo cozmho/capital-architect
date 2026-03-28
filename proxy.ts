@@ -10,7 +10,6 @@ const hasValidClerkKeys = (() => {
 })();
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
-const isAdminRoute = createRouteMatcher(['/dashboard/admin(.*)']);
 const isGodModeRoute = createRouteMatcher(['/dashboard/god-mode(.*)']);
 const isCloserRoute = createRouteMatcher(['/dashboard/closer(.*)']);
 const isSetterRoute = createRouteMatcher(['/dashboard/setter(.*)']);
@@ -79,7 +78,7 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
   }
 
   let requiredRole: DashboardRole | null = null;
-  if (isAdminRoute(req) || isGodModeRoute(req)) requiredRole = 'admin';
+  if (isGodModeRoute(req)) requiredRole = 'admin';
   if (isCloserRoute(req)) requiredRole = 'closer';
   if (isSetterRoute(req)) requiredRole = 'setter';
 
