@@ -158,22 +158,40 @@ export async function POST(request: Request) {
   const source = resolveSource(payload);
   const status = toStatusFromSource(source);
 
+  // Validate numeric fields before database insertion
+  const adbValue = parseUtilizationBand(payload.utilizationBand) ?? 0;
+  const nsfsValue = normalizeYesNo(payload.recentLates) === "yes" ? 1 : 0;
+
+  if (!Number.isInteger(adbValue) || adbValue < 0 || adbValue > 100) {
+    return NextResponse.json(
+      { error: "Invalid adb value - must be integer between 0 and 100" },
+      { status: 400 }
+    );
+  }
+
+  if (!Number.isInteger(nsfsValue) || (nsfsValue !== 0 && nsfsValue !== 1)) {
+    return NextResponse.json(
+      { error: "Invalid nsfs value - must be 0 or 1" },
+      { status: 400 }
+    );
+  }
+
   const lead = await prisma.lead.upsert({
     where: { id: getStableLeadId(payload) },
     update: {
       businessName,
       tier,
       status,
-      adb: parseUtilizationBand(payload.utilizationBand) ?? 0,
-      nsfs: normalizeYesNo(payload.recentLates) === "yes" ? 1 : 0,
+      adb: adbValue,
+      nsfs: nsfsValue,
     },
     create: {
       id: getStableLeadId(payload),
       businessName,
       tier,
       status,
-      adb: parseUtilizationBand(payload.utilizationBand) ?? 0,
-      nsfs: normalizeYesNo(payload.recentLates) === "yes" ? 1 : 0,
+      adb: adbValue,
+      nsfs: nsfsValue,
     },
   });
 

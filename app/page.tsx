@@ -1,29 +1,25 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
+import {
+  hasValidClerkPublishableKey,
+  getUserRole,
+  parseGodModeUserIds,
+  hasPaidMembership as checkPaidMembership,
+} from "@/lib/clerk-utils";
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-const hasValidClerkPublishableKey = Boolean(publishableKey && !/x{8,}/i.test(publishableKey));
-const godModeUserIds = new Set(
-  (process.env.GOD_MODE_USER_IDS ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean),
-);
+const isClerkConfigured = hasValidClerkPublishableKey(publishableKey);
+const godModeUserIds = parseGodModeUserIds();
 
 export default async function Home() {
-  const { sessionClaims, userId } = hasValidClerkPublishableKey
+  const { sessionClaims, userId } = isClerkConfigured
     ? await auth()
     : { sessionClaims: null, userId: null };
-  const claims = (sessionClaims ?? {}) as {
-    metadata?: { role?: string; plan?: string; paid?: boolean };
-    publicMetadata?: { role?: string; plan?: string; paid?: boolean };
-  };
-  const role = claims.metadata?.role ?? claims.publicMetadata?.role;
-  const plan = (claims.metadata?.plan ?? claims.publicMetadata?.plan ?? "").toLowerCase();
-  const paidFlag = claims.metadata?.paid ?? claims.publicMetadata?.paid;
-  const hasPaidMembership = paidFlag === true || ["paid", "pro", "premium", "member"].includes(plan);
+  
+  const role = getUserRole(sessionClaims as Record<string, unknown> | null);
+  const hasPaidMembershipStatus = checkPaidMembership(sessionClaims as Record<string, unknown> | null);
   const hasGodModeOverride = Boolean(userId && godModeUserIds.has(userId));
-  const canAccessClientDashboard = hasPaidMembership;
+  const canAccessClientDashboard = hasPaidMembershipStatus;
   const canAccessCommandDashboard = role === "admin" || hasGodModeOverride;
 
   return (

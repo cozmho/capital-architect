@@ -1,12 +1,18 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import {
+  hasValidClerkPublishableKey,
+  hasValidClerkSecretKey,
+  getUserRole,
+  parseGodModeUserIds,
+  hasPaidMembership as checkPaidMembership,
+} from '@/lib/clerk-utils';
 
 const hasValidClerkKeys = (() => {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
   const secretKey = process.env.CLERK_SECRET_KEY ?? '';
 
-  const invalidToken = /x{8,}/i;
-  return Boolean(publishableKey && secretKey && !invalidToken.test(publishableKey) && !invalidToken.test(secretKey));
+  return hasValidClerkPublishableKey(publishableKey) && hasValidClerkSecretKey(secretKey);
 })();
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
@@ -15,12 +21,7 @@ const isCloserRoute = createRouteMatcher(['/dashboard/closer(.*)']);
 const isSetterRoute = createRouteMatcher(['/dashboard/setter(.*)']);
 const isClientRoute = createRouteMatcher(['/dashboard/client(.*)']);
 
-const godModeUserIds = new Set(
-  (process.env.GOD_MODE_USER_IDS ?? '')
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean),
-);
+const godModeUserIds = parseGodModeUserIds();
 
 type DashboardRole = 'admin' | 'closer' | 'setter';
 
@@ -36,31 +37,9 @@ const hasGodModeOverride = (userId: string | null | undefined): boolean => {
 };
 
 const getSessionRole = (sessionClaims: unknown): DashboardRole | null => {
-  if (!sessionClaims || typeof sessionClaims !== 'object') return null;
-
-  const claims = sessionClaims as {
-    metadata?: { role?: string };
-    publicMetadata?: { role?: string };
-  };
-
-  const role = claims.metadata?.role ?? claims.publicMetadata?.role;
+  const role = getUserRole(sessionClaims as Record<string, unknown> | null);
   if (role === 'admin' || role === 'closer' || role === 'setter') return role;
   return null;
-};
-
-const hasPaidMembership = (sessionClaims: unknown): boolean => {
-  if (!sessionClaims || typeof sessionClaims !== 'object') return false;
-
-  const claims = sessionClaims as {
-    metadata?: { plan?: string; paid?: boolean };
-    publicMetadata?: { plan?: string; paid?: boolean };
-  };
-
-  const plan = (claims.metadata?.plan ?? claims.publicMetadata?.plan ?? '').toLowerCase();
-  const paidFlag = claims.metadata?.paid ?? claims.publicMetadata?.paid;
-
-  if (paidFlag === true) return true;
-  return ['paid', 'pro', 'premium', 'member'].includes(plan);
 };
 
 const passthroughProxy = () => NextResponse.next();
@@ -73,7 +52,7 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
   const { sessionClaims, userId } = await auth();
 
   if (isClientRoute(req)) {
-    if (hasPaidMembership(sessionClaims)) return;
+    if (checkPaidMembership(sessionClaims as Record<string, unknown> | null)) return;
     return NextResponse.redirect(new URL('/membership', req.url));
   }
 

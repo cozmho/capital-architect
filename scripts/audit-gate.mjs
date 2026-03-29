@@ -2,6 +2,16 @@ import { spawnSync } from "node:child_process";
 
 // Temporary allowlist for upstream advisories in Prisma toolchain packages.
 // Remove entries as soon as upstream patches are available.
+//
+// ⚠️  IMPORTANT EXPIRATION NOTICE ⚠️
+// All entries expire on: 2026-06-30
+// When this date passes, CI will fail. At that point:
+// 1. Review each GHSA to see if upstream patches are available
+// 2. Remove entries that have been patched
+// 3. For remaining issues, update expiry with explicit justification
+// 4. Consider pinning or replacing packages if patches are delayed
+//
+// Set a calendar reminder for 2026-06-25 to review this allowlist!
 const ALLOWLIST_EXPIRES_ON = "2026-06-30";
 
 const ALLOWED_ADVISORIES = [

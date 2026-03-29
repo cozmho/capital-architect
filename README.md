@@ -20,15 +20,20 @@ npm install
 
 1. Configure environment variables in `.env`:
 
-- `DATABASE_URL` (Supabase pooler, runtime queries)
-- `DIRECT_URL` (Supabase direct host, schema operations)
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (required for Clerk-protected dashboard behavior)
-- `CLERK_SECRET_KEY` (required for Clerk-protected dashboard behavior)
+- `DATABASE_URL` (Supabase connection pooler URL for runtime queries; used by `lib/prisma.ts` during application runtime)
+- `DIRECT_URL` (Supabase direct connection URL for migrations; used by `prisma.config.ts` for schema operations only)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (Clerk publishable key for client-side auth; use `pk_test_*` for development, `pk_live_*` for production)
+- `CLERK_SECRET_KEY` (Clerk secret key for server-side auth; use `sk_test_*` for development, `sk_live_*` for production)
 - `INTAKE_API_KEY` (optional but recommended for external intake calls)
 - `GOD_MODE_USER_IDS` (optional; comma-separated Clerk user IDs granted admin/god-mode access override)
 - `NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL` (optional; primary checkout action on `/membership`)
 - `NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL` (optional; secondary booking action on `/membership`)
 - `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.com`)
+
+**Database URL Notes:**
+- `DATABASE_URL`: Uses Supabase connection pooler (port 6543) with `?pgbouncer=true` for efficient connection management during runtime
+- `DIRECT_URL`: Uses direct Supabase connection (port 5432) for Prisma migrations and schema operations only
+- Both URLs point to the same database, but use different connection methods
 
 1. Start development:
 
@@ -62,9 +67,10 @@ npm run dev
 
 Dashboard routes under `/dashboard/*` are protected in `proxy.ts`.
 
-- `/dashboard/admin` requires role `admin`
+- `/dashboard/god-mode` requires role `admin` (or user ID in `GOD_MODE_USER_IDS` env variable)
 - `/dashboard/closer` requires role `closer`
 - `/dashboard/setter` requires role `setter`
+- `/dashboard/client` requires paid membership status
 
 When Clerk keys are placeholders or missing, the app degrades gracefully instead of crashing.
 
@@ -103,7 +109,7 @@ The endpoint:
 Invoke-RestMethod -Uri "http://localhost:3000/api/intake" -Method Post -Headers @{"x-intake-key"="caparch_intake_local_2026"} -ContentType "application/json" -Body '{"leadName":"Test Capital LLC","ficoBand":"720+","utilizationBand":"31-50%","bankruptcy":"No","recentLates":"No","sourceLeadId":"local-test-1"}'
 ```
 
-1. Confirm the lead appears in `/dashboard/admin`
+1. Confirm the lead appears in `/dashboard/god-mode`
 
 ## Build Inconsistency Sweep
 

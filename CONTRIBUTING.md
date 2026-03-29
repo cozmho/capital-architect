@@ -30,9 +30,28 @@ npm run dev
 
 - Use Next.js App Router conventions.
 - Keep route protection in `proxy.ts` (do not introduce `middleware.ts`).
-- Preserve role guards for `/dashboard/admin`, `/dashboard/closer`, and `/dashboard/setter`.
+- Preserve role guards for `/dashboard/god-mode`, `/dashboard/closer`, and `/dashboard/setter`.
 - Treat `prisma/schema.prisma` as high-impact and keep schema changes minimal.
 - Never commit real secrets.
+
+### TypeScript Path Aliases
+
+This project uses the `@/*` path alias for absolute imports from the project root:
+
+```typescript
+// Instead of relative imports:
+import { getPrismaClient } from "../../../lib/prisma"
+
+// Use absolute imports:
+import { getPrismaClient } from "@/lib/prisma"
+```
+
+**Configuration:** Defined in `tsconfig.json` with `"@/*": ["./*"]`
+
+**Examples:**
+- `@/lib/prisma` → `lib/prisma.ts`
+- `@/lib/clerk-utils` → `lib/clerk-utils.ts`
+- `@/app/globals.css` → `app/globals.css`
 
 ## Build Consistency Workflow
 

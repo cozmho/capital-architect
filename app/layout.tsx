@@ -1,15 +1,16 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
+import { hasValidClerkPublishableKey } from '@/lib/clerk-utils'
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? ''
-const hasValidClerkPublishableKey = Boolean(publishableKey && !/x{8,}/i.test(publishableKey))
+const isClerkConfigured = hasValidClerkPublishableKey(publishableKey)
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const content = hasValidClerkPublishableKey ? <ClerkProvider>{children}</ClerkProvider> : children
+  const content = isClerkConfigured ? <ClerkProvider>{children}</ClerkProvider> : children
 
   return (
     <html lang="en">

@@ -2,15 +2,16 @@ import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { BriefcaseBusiness, Target, Users } from "lucide-react";
+import {
+  hasValidClerkPublishableKey,
+  getUserRole,
+  parseGodModeUserIds,
+  hasPaidMembership as checkPaidMembership,
+} from "@/lib/clerk-utils";
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-const hasValidClerkPublishableKey = Boolean(publishableKey && !/x{8,}/i.test(publishableKey));
-const godModeUserIds = new Set(
-  (process.env.GOD_MODE_USER_IDS ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean),
-);
+const isClerkConfigured = hasValidClerkPublishableKey(publishableKey);
+const godModeUserIds = parseGodModeUserIds();
 
 type DashboardRole = "admin" | "closer" | "setter";
 
@@ -50,31 +51,9 @@ const navItems: NavItem[] = [
 ];
 
 function getRole(sessionClaims: unknown): DashboardRole | null {
-  if (!sessionClaims || typeof sessionClaims !== "object") return null;
-
-  const claims = sessionClaims as {
-    metadata?: { role?: string };
-    publicMetadata?: { role?: string };
-  };
-
-  const role = claims.metadata?.role ?? claims.publicMetadata?.role;
+  const role = getUserRole(sessionClaims as Record<string, unknown> | null);
   if (role === "admin" || role === "closer" || role === "setter") return role;
   return null;
-}
-
-function hasPaidMembership(sessionClaims: unknown): boolean {
-  if (!sessionClaims || typeof sessionClaims !== "object") return false;
-
-  const claims = sessionClaims as {
-    metadata?: { plan?: string; paid?: boolean };
-    publicMetadata?: { plan?: string; paid?: boolean };
-  };
-
-  const plan = (claims.metadata?.plan ?? claims.publicMetadata?.plan ?? "").toLowerCase();
-  const paidFlag = claims.metadata?.paid ?? claims.publicMetadata?.paid;
-
-  if (paidFlag === true) return true;
-  return ["paid", "pro", "premium", "member"].includes(plan);
 }
 
 export default async function DashboardLayout({
@@ -82,11 +61,11 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { sessionClaims, userId } = hasValidClerkPublishableKey
+  const { sessionClaims, userId } = isClerkConfigured
     ? await auth()
     : { sessionClaims: null, userId: null };
   const role = getRole(sessionClaims);
-  const paidMember = hasPaidMembership(sessionClaims);
+  const paidMember = checkPaidMembership(sessionClaims as Record<string, unknown> | null);
   const hasGodModeAccess = role === "admin" || Boolean(userId && godModeUserIds.has(userId));
 
   const visibleNavItems = navItems.filter((item) => {
@@ -124,7 +103,7 @@ export default async function DashboardLayout({
 
           <div className="mt-auto flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-3">
             <p className="text-sm text-zinc-400">Account</p>
-            {hasValidClerkPublishableKey ? (
+            {isClerkConfigured ? (
               <UserButton
                 appearance={{
                   elements: {
