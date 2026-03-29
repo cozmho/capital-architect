@@ -15,11 +15,34 @@ model User {
 }
 
 model Lead {
-  id           String   @id @default(cuid())
-  businessName String
-  tier         String   @default("B")
-  adb          Int
-  nsfs         Int
-  status       String   @default("PENDING_DOCS")
-  createdAt    DateTime @default(now())
+  id              String   @id @default(cuid())
+  businessName    String
+  ownerName       String?
+  email           String?
+  phone           String?
+  
+  // Financial Profile
+  ficoScore       Int?
+  monthlyRevenue  Int?
+  timeInBusiness  Int?     // months
+  
+  // Tier & Status
+  tier            String   @default("B")  // A, B, C, CHECK_MANUALLY
+  status          String   @default("PENDING_DOCS")
+  tags            String[] @default([])
+  
+  // Tracking Fields
+  adb             Int      @default(0)
+  nsfs            Int      @default(0)
+  source          String   @default("website")
+  notes           String?
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastContactedAt DateTime?
+  
+  @@index([email])
+  @@index([tier])
+  @@index([status])
 }
