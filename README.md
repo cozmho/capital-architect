@@ -28,7 +28,7 @@ npm install
 - `GOD_MODE_USER_IDS` (optional; comma-separated Clerk user IDs granted admin/god-mode access override)
 - `NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL` (optional; primary checkout action on `/membership`)
 - `NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL` (optional; secondary booking action on `/membership`)
-- `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.com`)
+- `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.tech`)
 
 **Database URL Notes:**
 - `DATABASE_URL`: Uses Supabase connection pooler (port 6543) with `?pgbouncer=true` for efficient connection management during runtime
@@ -147,7 +147,7 @@ The `/membership` page emits click events for conversion CTAs. If `gtag` and/or 
 | --- | --- | --- |
 | `membership_checkout_click` | User clicks the checkout CTA | `https://checkout.example.com/capital-architect` |
 | `membership_call_click` | User clicks the booking/call CTA | `https://calendly.com/example/capital-architect-membership` |
-| `membership_contact_click` | User clicks a membership contact email CTA | `mailto:support@capitalarchitect.com?subject=Capital%20Architect%20Membership` |
+| `membership_contact_click` | User clicks a membership contact email CTA | `mailto:support@capitalarchitect.tech?subject=Capital%20Architect%20Membership` |
 
 Shared event parameters:
 
