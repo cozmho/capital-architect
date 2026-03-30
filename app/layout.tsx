@@ -1,4 +1,5 @@
 import { ClerkProvider } from '@clerk/nextjs'
+import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { hasValidClerkPublishableKey } from '@/lib/clerk-utils'
 
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {content}
+        <Analytics />
       </body>
     </html>
   )
