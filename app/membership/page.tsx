@@ -5,7 +5,7 @@ import { TrackedExternalLink } from "./tracked-external-link";
 export default function MembershipPage() {
   const checkoutUrl = process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL;
   const bookingUrl = process.env.NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL;
-  const contactEmail = process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "hello@capitalarchitect.tech";
+  const contactEmail = process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "support@capitalarchitect.tech";
 
   return (
     <main className="min-h-screen bg-linear-to-br from-zinc-950 via-zinc-900 to-black px-6 py-10 text-zinc-100 lg:px-10">
