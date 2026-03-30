@@ -30,36 +30,6 @@ These instructions apply to all code changes in this repository.
 - Tailwind CSS v4 utility conventions.
 - Lucide React for icons.
 
-## Build And Test
-
-- Install deps: `npm install`
-- Dev server: `npm run dev`
-- Lint: `npm run lint`
-- Type check: `npm run type-check`
-- Production build: `npm run build`
-- Production runtime smoke test: `npm run start`
-
-## Build Inconsistency Sweep
-
-When the task asks to find build inconsistencies, use this exact order and only report verified issues:
-
-1. Check scripts and config drift first:
-  - `package.json` scripts align with actual workflow (`dev`, `lint`, `build`, `start`).
-  - `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs`, and `prisma.config.ts` do not conflict.
-2. Run `npm run lint`, `npm run type-check`, and `npm run build` before claiming a build issue.
-3. Classify findings:
-  - Build-breaking: fails lint/type-check/build.
-  - Risky inconsistency: passes now but likely CI or cross-env drift.
-  - Documentation drift: README/instructions do not match implemented behavior.
-4. Prefer smallest fix that preserves current architecture.
-5. Do not report style preferences as build failures unless a tool enforces them.
-
-## Security Gate Rules
-
-- Treat `scripts/audit-gate.mjs` allowlist entries as temporary exceptions only.
-- New allowlist entries must include GHSA, package, reason, and expiry.
-- If allowlist entries expire and CI fails, resolve via explicit follow-up PR (remove or renew with rationale).
-
 ## Routing And Auth
 
 - Keep dashboard protection in Clerk route-guard middleware equivalent via `proxy.ts`.
@@ -102,12 +72,6 @@ When the task asks to find build inconsistencies, use this exact order and only 
 - Do not mix Prisma schema changes with unrelated UI/auth changes unless explicitly asked.
 - Preserve user changes already present in the working tree.
 
-## Repository Settings
-
-- Treat CI as merge-gating: `.github/workflows/ci.yml` (`verify`) must stay green.
-- Assume `main` uses branch protection with required PR review and required status checks.
-- When proposing release-critical changes, call out any impact on required checks.
-
 ## Validation Checklist
 
 Before finalizing code edits:
@@ -115,5 +79,4 @@ Before finalizing code edits:
 1. Run diagnostics and resolve introduced errors.
 2. Verify Next.js startup does not fail on configuration mistakes.
 3. Confirm changed auth/routing behavior still matches role requirements.
-4. Run `npm run lint`, `npm run type-check`, and `npm run build` when changes could impact compilation or routing.
-5. Summarize any remaining warnings and why they are safe or pending.
+4. Summarize any remaining warnings and why they are safe or pending.
