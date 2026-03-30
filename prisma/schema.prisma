@@ -36,6 +36,19 @@ model Lead {
   source          String   @default("website")
   notes           String?
   
+  // Compliance Engine Fields
+  metro2ErrorCount       Int?
+  hasIdentityTheftBlock  Boolean?
+  complianceStatus       String?
+  
+  // Underwriting Engine Fields
+  chase524Count    Int?
+  recentInquiries  Int?
+  entityType       String?
+  
+  // Master Fundability Score
+  fundabilityScore Int?
+  
   // Timestamps
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
