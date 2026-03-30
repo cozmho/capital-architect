@@ -35,11 +35,12 @@ export default function IntakePage() {
   const [utilizationBand, setUtilizationBand] = useState("");
   const [bankruptcy, setBankruptcy] = useState("");
   const [recentLates, setRecentLates] = useState("");
+  const [businessStatus, setBusinessStatus] = useState("");
   const [submission, setSubmission] = useState<SubmissionState>(initialSubmissionState);
 
   const canSubmit = useMemo(() => {
-    return Boolean(leadName && ficoBand && utilizationBand && bankruptcy && recentLates);
-  }, [leadName, ficoBand, utilizationBand, bankruptcy, recentLates]);
+    return Boolean(leadName && ficoBand && utilizationBand && bankruptcy && recentLates && businessStatus);
+  }, [leadName, ficoBand, utilizationBand, bankruptcy, recentLates, businessStatus]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -53,6 +54,7 @@ export default function IntakePage() {
       utilizationBand,
       bankruptcy,
       recentLates,
+      businessStatus,
       source: "website",
       sourceLeadId: `website|${leadName}|${Date.now()}`,
     };
@@ -83,6 +85,7 @@ export default function IntakePage() {
       setUtilizationBand("");
       setBankruptcy("");
       setRecentLates("");
+      setBusinessStatus("");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unexpected submission error";
       setSubmission({
@@ -178,6 +181,23 @@ export default function IntakePage() {
               </select>
             </label>
           </div>
+
+          <label className="block space-y-2">
+            <span className="text-sm text-zinc-300">Business Status</span>
+            <select
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-zinc-100 outline-none ring-cyan-400/40 transition focus:ring"
+              value={businessStatus}
+              onChange={(event) => setBusinessStatus(event.target.value)}
+              required
+            >
+              <option value="">Select one</option>
+              <option value="LLC">Have LLC</option>
+              <option value="Private Trust">Have Private Trust</option>
+              <option value="No Business">No Business - Need Entity Setup</option>
+              <option value="Credit Repair">Need Credit Repair First</option>
+              <option value="Aged Corp">Interested in Aged Corp Acquisition</option>
+            </select>
+          </label>
 
           <button
             type="submit"
