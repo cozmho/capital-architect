@@ -49,6 +49,7 @@ import { getPrismaClient } from "@/lib/prisma"
 **Configuration:** Defined in `tsconfig.json` with `"@/*": ["./*"]`
 
 **Examples:**
+
 - `@/lib/prisma` → `lib/prisma.ts`
 - `@/lib/clerk-utils` → `lib/clerk-utils.ts`
 - `@/app/globals.css` → `app/globals.css`

@@ -1,5 +1,7 @@
 {
     "cSpell.words": [
+        "GHSA",
+        "nosniff",
         "Supabase"
     ],
     "markdownlint.ignore": [
