@@ -1,12 +1,9 @@
 import { getPrismaClient } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
 const prisma = getPrismaClient();
 
 type VerdictTier = "A" | "B" | "C" | "UNSCORED";
-
-// TODO: Re-enable Clerk auth when production keys are configured
-// This page is temporarily public for testing
-// When ready, uncomment the auth check below and remove this comment
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +41,9 @@ function getTierLabel(tier: VerdictTier): string {
 }
 
 export default async function AdminLeadsPage() {
+  // Verify user is authenticated
+  await auth();
+
   const leads = await prisma.lead.findMany({
     select: {
       id: true,
