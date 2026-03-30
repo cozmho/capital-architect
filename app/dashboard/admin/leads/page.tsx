@@ -4,6 +4,12 @@ const prisma = getPrismaClient();
 
 type VerdictTier = "A" | "B" | "C" | "UNSCORED";
 
+// TODO: Re-enable Clerk auth when production keys are configured
+// This page is temporarily public for testing
+// When ready, uncomment the auth check below and remove this comment
+
+export const dynamic = "force-dynamic";
+
 function computeTier(score: number | null): VerdictTier {
   if (score === null || score === undefined) return "UNSCORED";
   if (score >= 80) return "A";
