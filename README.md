@@ -57,7 +57,7 @@ npm run dev
 - `app/` App Router routes and layouts
 - `app/api/intake/route.ts` intake endpoint with tiering and idempotent upsert
 - `app/dashboard/*` role-specific dashboard views
-- `proxy.ts` dashboard protection and role redirects (no `middleware.ts`)
+- `middleware.ts` dashboard protection and role redirects
 - `lib/prisma.ts` Prisma runtime client singleton
 - `prisma/schema.prisma` core data models
 - `prisma.config.ts` Prisma CLI datasource resolution
@@ -65,7 +65,7 @@ npm run dev
 
 ## Auth And Routing
 
-Dashboard routes under `/dashboard/*` are protected in `proxy.ts`.
+Dashboard routes under `/dashboard/*` are protected in `middleware.ts`.
 
 - `/dashboard/god-mode` requires role `admin` (or user ID in `GOD_MODE_USER_IDS` env variable)
 - `/dashboard/closer` requires role `closer`
@@ -136,7 +136,7 @@ Documentation drift means docs do not match behavior.
 
 ## Notes
 
-- This repository uses `proxy.ts` for route protection. Do not introduce `middleware.ts`.
+- This repository uses `middleware.ts` for route protection (standard Next.js convention).
 - Keep `.env` uncommitted and `.env.example` safe for sharing.
 
 ## Membership CTA Event Tracking

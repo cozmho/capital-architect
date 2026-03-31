@@ -1,7 +1,7 @@
 auth:
   - changed-files:
       - any-glob-to-any-file:
-          - proxy.ts
+          - middleware.ts
           - app/dashboard/**
 
 prisma:
@@ -43,5 +43,5 @@ security:
   - changed-files:
       - any-glob-to-any-file:
           - .github/CODEOWNERS
-          - proxy.ts
+          - middleware.ts
           - .env.example

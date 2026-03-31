@@ -24,7 +24,7 @@ These instructions apply to all code changes in this repository.
 
 ## Stack Baseline
 
-- Next.js 16 App Router with `proxy.ts` (not `middleware.ts`).
+- Next.js 16 App Router with `middleware.ts` for route protection.
 - Clerk for authentication and dashboard role gating.
 - Prisma + Supabase Postgres.
 - Tailwind CSS v4 utility conventions.
@@ -32,7 +32,7 @@ These instructions apply to all code changes in this repository.
 
 ## Routing And Auth
 
-- Keep dashboard protection in Clerk route-guard middleware equivalent via `proxy.ts`.
+- Keep dashboard protection in Clerk route-guard middleware via `middleware.ts`.
 - Dashboard routes under `/dashboard/*` must stay protected.
 - Role-specific paths must remain enforced:
   - `/dashboard/admin` => `admin`

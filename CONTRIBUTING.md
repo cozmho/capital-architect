@@ -29,7 +29,7 @@ npm run dev
 ## Project Rules
 
 - Use Next.js App Router conventions.
-- Keep route protection in `proxy.ts` (do not introduce `middleware.ts`).
+- Keep route protection in `middleware.ts` (standard Next.js convention).
 - Preserve role guards for `/dashboard/god-mode`, `/dashboard/closer`, and `/dashboard/setter`.
 - Treat `prisma/schema.prisma` as high-impact and keep schema changes minimal.
 - Never commit real secrets.
@@ -141,7 +141,7 @@ For stricter governance, enable "Require review from Code Owners" in branch prot
 
 - `README.md` for runtime setup and intake flow.
 - `AGENTS.md` for agent workflow and guardrails.
-- `proxy.ts` for route protection and role redirects.
+- `middleware.ts` for route protection and role redirects.
 - `app/api/intake/route.ts` for intake normalization and tiering logic.
 
 ## Issue Reporting

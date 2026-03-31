@@ -15,7 +15,7 @@ Use these rules when working in `app/` routes and UI code.
 ## Next.js Conventions
 
 - Keep App Router patterns.
-- Do not introduce `middleware.ts`; route protection belongs in `proxy.ts`.
+- Do not introduce custom middleware naming; use `middleware.ts`.
 - Prefer server components unless client hooks/state are required.
 
 ## Tailwind v4 Conventions

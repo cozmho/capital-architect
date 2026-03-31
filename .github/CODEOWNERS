@@ -11,7 +11,7 @@
 /CONTRIBUTING.md @cozmho
 
 # Auth and routing critical paths
-/proxy.ts @cozmho
+/middleware.ts @cozmho
 /app/dashboard/ @cozmho
 
 # API and data layer

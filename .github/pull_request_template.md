@@ -47,7 +47,7 @@ npm run build
 ## Auth / Routing Impact
 
 - [ ] No auth or route behavior changes
-- [ ] `proxy.ts` behavior changed (describe below)
+- [ ] `middleware.ts` behavior changed (describe below)
 - [ ] Dashboard role path behavior validated (`/dashboard/admin`, `/dashboard/closer`, `/dashboard/setter`)
 
 Notes:

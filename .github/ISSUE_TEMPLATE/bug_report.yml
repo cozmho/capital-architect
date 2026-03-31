@@ -117,4 +117,4 @@ body:
     attributes:
       label: Suspected Scope
       description: List files or areas likely involved.
-      placeholder: app/api/intake/route.ts, lib/prisma.ts, proxy.ts
+      placeholder: app/api/intake/route.ts, lib/prisma.ts, middleware.ts
