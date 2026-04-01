@@ -25,6 +25,19 @@
       ]
     },
     {
+      "source": "/dashboard/admin/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
       "source": "/api/(.*)",
       "headers": [
         {
@@ -39,6 +52,16 @@
       "source": "/admin",
       "destination": "/dashboard/god-mode",
       "permanent": true
+    },
+    {
+      "source": "/dashboard/admin/leads",
+      "destination": "/dashboard/admin/lead-scoring",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard/admin/scoring",
+      "destination": "/dashboard/admin/lead-scoring",
+      "permanent": false
     }
   ]
 }

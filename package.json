@@ -14,7 +14,8 @@
     "health": "npx ts-node scripts/health-check.ts"
   },
   "dependencies": {
-    "@clerk/nextjs": "^7.0.7",
+    "@clerk/nextjs": "^7.0.8",
+    "@google/genai": "^1.48.0",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@vercel/analytics": "^2.0.1",
