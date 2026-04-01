@@ -2,6 +2,11 @@
 
 import { execSync } from "child_process";
 import * as https from "https";
+import { config } from "dotenv";
+import { resolve } from "path";
+
+// Load .env.local for local development
+config({ path: resolve(process.cwd(), ".env.local") });
 
 interface CheckResult {
   service: string;
