@@ -20,7 +20,7 @@ npm install
 
 1. Configure environment variables in `.env`:
 
-- `DATABASE_URL` (Supabase connection pooler URL for runtime queries; used by `lib/prisma.ts` during application runtime)
+- `DATABASE_URL` (Supabase direct connection URL, port 5432; used by `lib/prisma.ts` during application runtime)
 - `DIRECT_URL` (Supabase direct connection URL for migrations; used by `prisma.config.ts` for schema operations only)
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (Clerk publishable key for client-side auth; use `pk_test_*` for development, `pk_live_*` for production)
 - `CLERK_SECRET_KEY` (Clerk secret key for server-side auth; use `sk_test_*` for development, `sk_live_*` for production)
@@ -31,9 +31,9 @@ npm install
 - `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.tech`)
 
 **Database URL Notes:**
-- `DATABASE_URL`: Uses Supabase connection pooler (port 6543) with `?pgbouncer=true` for efficient connection management during runtime
-- `DIRECT_URL`: Uses direct Supabase connection (port 5432) for Prisma migrations and schema operations only
-- Both URLs point to the same database, but use different connection methods
+- `DATABASE_URL`: Uses the Supabase direct connection (port 5432) for both runtime queries and Prisma operations
+- `DIRECT_URL`: Also uses the direct connection (port 5432) — required explicitly for Prisma CLI migration commands
+- Both point to the same database endpoint; port 5432 direct is required (the pooler on port 6543 is not supported with the `@prisma/adapter-pg` driver)
 
 1. Start development:
 
@@ -75,6 +75,35 @@ Dashboard routes under `/dashboard/*` are protected in `middleware.ts`.
 When Clerk keys are placeholders or missing, the app degrades gracefully instead of crashing.
 
 For owner access, `/dashboard/god-mode` accepts either role `admin` from Clerk metadata or a user ID listed in `GOD_MODE_USER_IDS`.
+
+## Vercel Social Connection (Production Setup)
+
+Clerk supports Sign In with Vercel so users can authenticate using their Vercel account. This is configured entirely within the Clerk Dashboard — no additional environment variables are required in the app.
+
+### Development instances
+
+Clerk provides shared OAuth credentials automatically. No extra configuration is needed:
+
+1. In the [Clerk Dashboard](https://dashboard.clerk.com/~/user-authentication/sso-connections), go to **SSO connections**.
+2. Select **Add connection → For all users → Vercel**.
+3. The connection is immediately active — Clerk uses preconfigured shared credentials so no Client ID or Secret is required.
+
+To verify, visit your Clerk Account Portal sign-in page at `https://your-domain.accounts.dev/sign-in` and confirm **Continue with Vercel** appears as a sign-in option.
+
+### Production instances
+
+Production instances require custom OAuth credentials from a dedicated Vercel app:
+
+1. **In the Clerk Dashboard** — Go to **SSO connections**, add a Vercel connection, enable **Use custom credentials**, and copy the **Authorization Callback URL**.
+2. **In your Vercel team settings** — Navigate to **Settings → Apps → Create**:
+   - Enter a name and slug for your app and select **Save**.
+   - Under **Authorization Callback URLs**, paste the URL from step 1.
+   - On the **Authentication** tab, select `client_secret_post` (recommended for server-side apps).
+   - On the **Permissions** tab, enable `openid`, `email`, `profile`, and `offline_access`.
+   - Select **Generate** to create a client secret. Save both the **Client ID** and **Client Secret** somewhere secure.
+3. **Back in the Clerk Dashboard** — Paste the Client ID and Client Secret into the connection form and save.
+
+Test by visiting your Clerk Account Portal sign-in page and signing in with Vercel. The URL format is `https://accounts.your-domain.com/sign-in` — replace `your-domain.com` with your Clerk frontend API domain, which is found in the Clerk Dashboard under **API Keys**.
 
 ## Intake API
 
