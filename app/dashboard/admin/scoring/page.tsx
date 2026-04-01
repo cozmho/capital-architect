@@ -40,7 +40,7 @@ function getTierLabel(tier: VerdictTier): string {
   }
 }
 
-export default async function AdminLeadsPage() {
+export default async function AdminScoringPage() {
   // Verify user is authenticated
   await auth();
 
