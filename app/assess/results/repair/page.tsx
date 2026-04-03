@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 
+const repairKitUrl =
+  process.env.NEXT_PUBLIC_REPAIR_KIT_URL ||
+  "https://capitalarchitect.tech/products/repair-kit";
+
 export default function RepairPage() {
   return (
     <main className="min-h-screen bg-[#060A14] px-6 py-16 text-zinc-100">
@@ -27,7 +31,7 @@ export default function RepairPage() {
 
         <div className="mt-12 space-y-4">
           <Link
-            href="https://gumroad.com/placeholder"
+            href={repairKitUrl}
             target="_blank"
             className="inline-block w-full rounded-lg bg-red-500 px-8 py-5 text-lg font-semibold text-white transition hover:bg-red-600"
           >

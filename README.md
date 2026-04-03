@@ -28,6 +28,7 @@ npm install
 - `GOD_MODE_USER_IDS` (optional; comma-separated Clerk user IDs granted admin/god-mode access override)
 - `NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL` (optional; primary checkout action on `/membership`)
 - `NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL` (optional; secondary booking action on `/membership`)
+- `NEXT_PUBLIC_REPAIR_KIT_URL` (optional; repair kit CTA on `/assess/results/repair`)
 - `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.tech`)
 
 **Database URL Notes:**
