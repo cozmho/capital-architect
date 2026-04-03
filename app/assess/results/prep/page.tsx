@@ -12,7 +12,7 @@ export default function PrepPage() {
         </div>
 
         <h1 className="font-serif text-5xl font-bold text-white md:text-6xl">
-          You're Close.
+          You&apos;re Close.
         </h1>
         <p className="mt-4 text-2xl font-light text-yellow-500">
           One sprint away from capital.
@@ -20,7 +20,7 @@ export default function PrepPage() {
 
         <div className="mt-8 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 p-8">
           <p className="text-lg text-zinc-300">
-            Your fundability is within reach. A few structural fixes and you're in Tier A territory.
+            Your fundability is within reach. A few structural fixes and you&apos;re in Tier A territory.
           </p>
           <p className="mt-4 text-zinc-400">
             Our Funding Readiness Intensive handles entity setup, credit positioning, and underwriting prep in one focused engagement.

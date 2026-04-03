@@ -21,7 +21,7 @@ export default function RepairPage() {
             Your credit profile needs repair before pursuing funding. Good news: this is a solved problem.
           </p>
           <p className="mt-4 text-zinc-400">
-            Follow the DIY playbook or work with our credit optimization partners. Either way, you'll be back in 60-90 days ready for Tier B.
+            Follow the DIY playbook or work with our credit optimization partners. Either way, you&apos;ll be back in 60-90 days ready for Tier B.
           </p>
         </div>
 
@@ -39,7 +39,7 @@ export default function RepairPage() {
         </div>
 
         <div className="mt-16 space-y-6 text-left">
-          <h2 className="font-serif text-2xl font-semibold text-white">What's Inside:</h2>
+          <h2 className="font-serif text-2xl font-semibold text-white">What&apos;s Inside:</h2>
           <div className="space-y-4">
             {[
               "How to pull and audit your credit reports (all 3 bureaus)",
@@ -57,9 +57,9 @@ export default function RepairPage() {
         </div>
 
         <div className="mt-12 rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 text-sm text-zinc-400">
-          <p className="font-semibold text-zinc-200">Come back when you're ready.</p>
+          <p className="font-semibold text-zinc-200">Come back when you&apos;re ready.</p>
           <p className="mt-2">
-            Re-take this assessment once your credit is cleaned up. We'll still be here, and funding will still be waiting.
+            Re-take this assessment once your credit is cleaned up. We&apos;ll still be here, and funding will still be waiting.
           </p>
         </div>
       </div>
