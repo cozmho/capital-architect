@@ -98,7 +98,7 @@ export default function AssessPage() {
         {step === 1 && (
           <section className="space-y-6">
             <h2 className="font-serif text-2xl font-semibold text-white">
-              Let's start with the basics
+              Let&apos;s start with the basics
             </h2>
             <div className="space-y-4">
               <label className="block">

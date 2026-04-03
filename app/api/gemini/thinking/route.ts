@@ -2,11 +2,7 @@
 import {
   GoogleGenAI,
   ThinkingLevel as GeminiThinkingLevel,
-  type ThinkingCimport {
-    GoogleGenAI,
-    ThinkingLevel as GeminiThinkingLevel,
-    type ThinkingConfig
-  } from "@google/genai";,
+  type ThinkingConfig
 } from "@google/genai";
 import { NextResponse } from "next/server";
 
