@@ -1,0 +1,22 @@
+{
+	"servers": {
+		"terraform": {
+			"command": "docker",
+			"args": [
+				"run",
+				"-i",
+				"--rm",
+				"-e",
+				"TFE_TOKEN=${COPILOT_MCP_TFE_TOKEN}",
+				"-e",
+				"TFE_ADDRESS=${COPILOT_MCP_TFE_ADDRESS}",
+				"-e",
+				"ENABLE_TF_OPERATIONS=${COPILOT_MCP_ENABLE_TF_OPERATIONS}",
+				"hashicorp/terraform-mcp-server:latest"
+			],
+			"env": {},
+			"type": "stdio"
+		}
+	},
+	"inputs": []
+}
