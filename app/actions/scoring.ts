@@ -1,6 +1,7 @@
 "use server";
 
 import { getPrismaClient } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 
 const prisma = getPrismaClient();
 
@@ -55,6 +56,8 @@ type IntakeResult = {
 };
 
 export async function processIntake(payload: IntakePayload): Promise<IntakeResult> {
+  let intakeResult: IntakeResult;
+
   try {
     // Calculate fundability score with baseline algorithm
     let fundabilityScore = 100;
@@ -129,7 +132,7 @@ export async function processIntake(payload: IntakePayload): Promise<IntakeResul
           },
         });
 
-    return {
+    intakeResult = {
       success: true,
       leadId: lead.id,
       fundabilityScore,
@@ -139,4 +142,12 @@ export async function processIntake(payload: IntakePayload): Promise<IntakeResul
     console.error("Intake processing error:", error);
     throw new Error("Failed to process intake");
   }
+
+  if (payload.metro2ErrorCount > 0) {
+    redirect("/dashboard/client/letter-preview");
+  }
+
+  redirect("/dashboard/client/entity-setup");
+
+  return intakeResult;
 }

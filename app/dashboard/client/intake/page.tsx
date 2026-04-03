@@ -27,7 +27,7 @@ export default function ClientIntakePage() {
     setMessage("");
 
     try {
-      const result = await processIntake({
+      await processIntake({
         businessName,
         email: email || undefined,
         phone: phone || undefined,
@@ -35,17 +35,6 @@ export default function ClientIntakePage() {
         metro2ErrorCount: parseInt(metro2ErrorCount, 10),
         entityType,
       });
-
-      setSubmissionState("success");
-      setMessage(result.message);
-
-      // Reset form
-      setBusinessName("");
-      setEmail("");
-      setPhone("");
-      setRecentInquiries("");
-      setMetro2ErrorCount("");
-      setEntityType("");
     } catch (error) {
       setSubmissionState("error");
       setMessage(error instanceof Error ? error.message : "Failed to submit intake");
