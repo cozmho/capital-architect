@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { processIntake } from "@/app/actions/scoring";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 type SubmissionState = "idle" | "submitting" | "success" | "error";
 
@@ -36,6 +37,11 @@ export default function ClientIntakePage() {
         entityType,
       });
     } catch (error) {
+      if (isRedirectError(error)) {
+        setSubmissionState("idle");
+        throw error;
+      }
+
       setSubmissionState("error");
       setMessage(error instanceof Error ? error.message : "Failed to submit intake");
     }

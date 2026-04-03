@@ -48,16 +48,7 @@ type IntakePayload = {
   entityType: string;
 };
 
-type IntakeResult = {
-  success: boolean;
-  leadId: string;
-  fundabilityScore: number;
-  message: string;
-};
-
-export async function processIntake(payload: IntakePayload): Promise<IntakeResult> {
-  let intakeResult: IntakeResult;
-
+export async function processIntake(payload: IntakePayload): Promise<void> {
   try {
     // Calculate fundability score with baseline algorithm
     let fundabilityScore = 100;
@@ -101,8 +92,8 @@ export async function processIntake(payload: IntakePayload): Promise<IntakeResul
       },
     });
 
-    const lead = existingLead
-      ? await prisma.lead.update({
+    if (existingLead) {
+      await prisma.lead.update({
           where: {
             id: existingLead.id,
           },
@@ -116,28 +107,23 @@ export async function processIntake(payload: IntakePayload): Promise<IntakeResul
             tier,
             status: "INTAKE_COMPLETE",
           },
-        })
-      : await prisma.lead.create({
-          data: {
-            businessName: payload.businessName,
-            email: resolvedEmail,
-            phone: payload.phone,
-            recentInquiries: payload.recentInquiries,
-            metro2ErrorCount: payload.metro2ErrorCount,
-            entityType: payload.entityType,
-            fundabilityScore,
-            tier,
-            status: "INTAKE_COMPLETE",
-            source: "client_dashboard",
-          },
         });
-
-    intakeResult = {
-      success: true,
-      leadId: lead.id,
-      fundabilityScore,
-      message: `Intake saved successfully. Fundability Score: ${fundabilityScore}. Tier: ${tier}`,
-    };
+    } else {
+      await prisma.lead.create({
+        data: {
+          businessName: payload.businessName,
+          email: resolvedEmail,
+          phone: payload.phone,
+          recentInquiries: payload.recentInquiries,
+          metro2ErrorCount: payload.metro2ErrorCount,
+          entityType: payload.entityType,
+          fundabilityScore,
+          tier,
+          status: "INTAKE_COMPLETE",
+          source: "client_dashboard",
+        },
+      });
+    }
   } catch (error) {
     console.error("Intake processing error:", error);
     throw new Error("Failed to process intake");
@@ -148,6 +134,4 @@ export async function processIntake(payload: IntakePayload): Promise<IntakeResul
   }
 
   redirect("/dashboard/client/entity-setup");
-
-  return intakeResult;
 }
