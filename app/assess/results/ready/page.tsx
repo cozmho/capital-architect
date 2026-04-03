@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
+const strategyCallUrl =
+  process.env.NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL ||
+  "https://calendly.com/capital-architect/strategy-call";
+
 export default function ReadyPage() {
   return (
     <main className="min-h-screen bg-[#060A14] px-6 py-16 text-zinc-100">
@@ -27,7 +31,7 @@ export default function ReadyPage() {
 
         <div className="mt-12 space-y-4">
           <Link
-            href="https://calendly.com/placeholder"
+            href={strategyCallUrl}
             target="_blank"
             className="inline-block w-full rounded-lg bg-[#C8A84B] px-8 py-5 text-lg font-semibold text-[#060A14] transition hover:bg-[#B89A42]"
           >
