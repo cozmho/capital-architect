@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/prisma";
 
-const prisma = getPrismaClient();
-
 export async function GET() {
+  // Avoid crashing build/CI environments that don't have a DB configured
+  if (!process.env.DATABASE_URL) {
+    return NextResponse.json(
+      { error: "DATABASE_URL is not configured" },
+      { status: 503 }
+    );
+  }
+
   try {
+    const prisma = getPrismaClient();
     const leads = await prisma.lead.findMany({
       select: {
         id: true,

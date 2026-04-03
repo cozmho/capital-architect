@@ -12,13 +12,13 @@ export default function ReadyPage() {
         </div>
 
         <h1 className="font-serif text-5xl font-bold text-[#C8A84B] md:text-6xl">
-          You're Fundable.
+          You&apos;re Fundable.
         </h1>
-        <p className="mt-4 text-2xl font-light text-white">Let's move.</p>
+        <p className="mt-4 text-2xl font-light text-white">Let&apos;s move.</p>
 
         <div className="mt-8 rounded-2xl border border-[#C8A84B]/30 bg-[#C8A84B]/5 p-8">
           <p className="text-lg text-zinc-300">
-            Your profile clears our underwriting criteria. You're ready for capital deployment.
+            Your profile clears our underwriting criteria. You&apos;re ready for capital deployment.
           </p>
           <p className="mt-4 text-zinc-400">
             Next step: strategy call to map your funding stack and lock in terms.

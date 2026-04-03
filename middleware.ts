@@ -17,6 +17,7 @@ const hasValidClerkKeys = (() => {
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
 const isGodModeRoute = createRouteMatcher(['/dashboard/god-mode(.*)']);
+const isAdminRoute = createRouteMatcher(['/dashboard/admin(.*)']);
 const isCloserRoute = createRouteMatcher(['/dashboard/closer(.*)']);
 const isSetterRoute = createRouteMatcher(['/dashboard/setter(.*)']);
 const isClientRoute = createRouteMatcher(['/dashboard/client(.*)']);
@@ -47,9 +48,11 @@ const passthroughProxy = () => NextResponse.next();
 const clerkProxy = clerkMiddleware(async (auth, req) => {
   if (!isProtectedRoute(req)) return;
 
-  await auth.protect();
-
   const { sessionClaims, userId } = await auth();
+
+  if (!userId) {
+    return NextResponse.redirect(new URL('/sign-in', req.url));
+  }
 
   if (isClientRoute(req)) {
     if (checkPaidMembership(sessionClaims as Record<string, unknown> | null)) return;
@@ -58,6 +61,7 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
 
   let requiredRole: DashboardRole | null = null;
   if (isGodModeRoute(req)) requiredRole = 'admin';
+  if (isAdminRoute(req)) requiredRole = 'admin';
   if (isCloserRoute(req)) requiredRole = 'closer';
   if (isSetterRoute(req)) requiredRole = 'setter';
 

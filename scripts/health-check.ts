@@ -2,6 +2,11 @@
 
 import { execSync } from "child_process";
 import * as https from "https";
+import { config } from "dotenv";
+import { resolve } from "path";
+
+// Load .env.local for local development
+config({ path: resolve(process.cwd(), ".env.local") });
 
 interface CheckResult {
   service: string;
@@ -14,8 +19,9 @@ const results: CheckResult[] = [];
 function exec(command: string): string {
   try {
     return execSync(command, { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }).trim();
-  } catch (error: any) {
-    return error.stdout?.trim() || error.message || "";
+  } catch (error: unknown) {
+    const err = error as { stdout?: string; message?: string };
+    return err.stdout?.trim() || err.message || "";
   }
 }
 

@@ -81,6 +81,12 @@ const ALLOWED_ADVISORIES = [
     reason: "Transitive through Prisma dev dependency graph.",
     expiresOn: ALLOWLIST_EXPIRES_ON,
   },
+  {
+    ghsa: "GHSA-r5fr-rjxr-66jc",
+    package: "lodash",
+    reason: "Transitive through Prisma parser toolchain (chevrotain via @mrleebo/prisma-ast).",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
 ];
 
 function parseDateOnly(input) {
