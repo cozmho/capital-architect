@@ -5,13 +5,5 @@ export async function GET() {
   const result = await runStatusCheck();
   const statusCode = result.overall === "fail" ? 503 : 200;
 
-  return NextResponse.json(
-    {
-      ok: result.overall !== "fail",
-      overall: result.overall,
-      checks: result.checks,
-      generatedAt: result.generatedAt,
-    },
-    { status: statusCode }
-  );
+  return NextResponse.json(result, { status: statusCode });
 }
