@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 
+const prepCheckoutUrl =
+  process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL ||
+  "https://buy.stripe.com/capital-architect-membership";
+
 export default function PrepPage() {
   return (
     <main className="min-h-screen bg-[#060A14] px-6 py-16 text-zinc-100">
@@ -29,7 +33,7 @@ export default function PrepPage() {
 
         <div className="mt-12 space-y-4">
           <Link
-            href="https://buy.stripe.com/placeholder"
+            href={prepCheckoutUrl}
             target="_blank"
             className="inline-block w-full rounded-lg bg-yellow-500 px-8 py-5 text-lg font-semibold text-[#060A14] transition hover:bg-yellow-400"
           >
