@@ -1,12 +1,43 @@
 #!/usr/bin/env ts-node
 
+import { existsSync, readFileSync } from "fs";
 import { execSync } from "child_process";
 import * as https from "https";
-import { config } from "dotenv";
 import { resolve } from "path";
 
-// Load .env.local for local development
-config({ path: resolve(process.cwd(), ".env.local") });
+function loadLocalEnv() {
+  const envPath = resolve(process.cwd(), ".env.local");
+
+  if (!existsSync(envPath)) {
+    return;
+  }
+
+  const contents = readFileSync(envPath, "utf-8");
+  for (const line of contents.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
+    }
+
+    const equalsIndex = trimmed.indexOf("=");
+    if (equalsIndex === -1) {
+      continue;
+    }
+
+    const key = trimmed.slice(0, equalsIndex).trim();
+    let value = trimmed.slice(equalsIndex + 1).trim();
+
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+
+    if (key && process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+}
+
+loadLocalEnv();
 
 interface CheckResult {
   service: string;
@@ -61,7 +92,7 @@ async function checkSupabase() {
 
   // Test database connection
   try {
-    exec('echo "SELECT 1;" | npx prisma db execute --stdin');
+    exec('echo "SELECT 1;" | npx --yes prisma db execute --stdin');
     addResult("Supabase", "pass", "Database connection successful");
   } catch {
     addResult("Supabase", "fail", "Database connection failed - check credentials");
@@ -99,7 +130,7 @@ async function checkVercel() {
   console.log("\n🔍 Checking VERCEL...");
   
   // Check authentication
-  const whoami = exec("npx vercel whoami 2>&1");
+  const whoami = exec("npx --yes vercel whoami 2>&1");
   if (whoami.includes("Error") || whoami.includes("not logged in")) {
     addResult("Vercel", "fail", "Not authenticated - run: npx vercel login");
     return;
@@ -107,7 +138,7 @@ async function checkVercel() {
   addResult("Vercel", "pass", `Authenticated as: ${whoami}`);
 
   // Check production environment variables
-  const envList = exec("npx vercel env ls production 2>&1");
+  const envList = exec("npx --yes vercel env ls production 2>&1");
   const requiredVars = [
     "DATABASE_URL",
     "DIRECT_URL", 
