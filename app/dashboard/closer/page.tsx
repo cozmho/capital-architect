@@ -134,7 +134,7 @@ export default async function CloserDashboardPage() {
                   fundingReviewLeads.map((item) => (
                     <tr key={item.id} className="border-b border-zinc-900/70 text-zinc-200">
                       <td className="py-3 pr-4">{item.businessName}</td>
-                      <td className="py-3 pr-4">{item.adb}%</td>
+                      <td className="py-3 pr-4">{item.adb != null ? `${item.adb}%` : "—"}</td>
                       <td className="py-3 pr-4">{formatDate(item.createdAt)}</td>
                       <td className="py-3">
                         <span className="rounded-md border border-emerald-600/40 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-300">
