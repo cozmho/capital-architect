@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+  "CDN-Cache-Control": "no-store",
+  "Vercel-CDN-Cache-Control": "no-store",
+};
+
 export async function GET() {
   // Avoid crashing build/CI environments that don't have a DB configured
   if (!process.env.DATABASE_URL) {
     return NextResponse.json(
       { error: "DATABASE_URL is not configured" },
-      { status: 503 }
+      { status: 503, headers: NO_STORE_HEADERS }
     );
   }
 
@@ -30,12 +38,12 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(leads);
+    return NextResponse.json(leads, { headers: NO_STORE_HEADERS });
   } catch (error) {
     console.error("Error fetching leads:", error);
     return NextResponse.json(
       { error: "Failed to fetch leads" },
-      { status: 500 }
+      { status: 500, headers: NO_STORE_HEADERS }
     );
   }
 }
