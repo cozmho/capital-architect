@@ -1,4 +1,5 @@
-import { Activity, BadgeDollarSign, Crown, TrendingUp, Users } from "lucide-react";
+import { Activity, BadgeDollarSign, Crown, Key, TrendingUp, Users } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
 import { getPrismaClient } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,8 @@ function formatAdb(adb: number): string {
 }
 
 export default async function GodModeCommandPage() {
+  const { userId } = await auth();
+  const isDevelopment = process.env.NODE_ENV !== "production";
   const prisma = getPrismaClient();
   const [totalLeads, tierALeads, tierBLeads, recentPipeline] = await Promise.all([
     prisma.lead.count(),
@@ -72,9 +75,17 @@ export default async function GodModeCommandPage() {
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">God Mode</h1>
               <p className="mt-2 text-sm text-zinc-400">Pipeline intelligence, lead quality, and momentum at a glance.</p>
             </div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-zinc-300">
-              <Activity className="h-4 w-4 text-cyan-300" />
-              Live mode
+            <div className="flex flex-col items-end gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-zinc-300">
+                <Activity className="h-4 w-4 text-cyan-300" />
+                Live mode
+              </div>
+              {userId && isDevelopment && (
+                <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700/50 bg-zinc-900/50 px-4 py-2 text-xs text-zinc-400">
+                  <Key className="h-3 w-3 text-amber-400" />
+                  Your Clerk ID: <span className="font-mono text-zinc-300">{userId}</span>
+                </div>
+              )}
             </div>
           </div>
         </header>

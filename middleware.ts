@@ -21,6 +21,7 @@ const isAdminRoute = createRouteMatcher(['/dashboard/admin(.*)']);
 const isCloserRoute = createRouteMatcher(['/dashboard/closer(.*)']);
 const isSetterRoute = createRouteMatcher(['/dashboard/setter(.*)']);
 const isClientRoute = createRouteMatcher(['/dashboard/client(.*)']);
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const godModeUserIds = parseGodModeUserIds();
 
@@ -73,6 +74,12 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
 
   if (role === requiredRole) return;
 
+  // Show a local-only setup hint so production logs do not leak identifiers.
+  if (requiredRole === 'admin' && !hasGodModeOverride(userId) && isDevelopment) {
+    console.warn(
+      `[God Mode Setup] Access denied for userId=${userId}. Add this value to GOD_MODE_USER_IDS in .env.local to enable owner override.`
+    );
+  }
   if (role && roleHome[role]) {
     return NextResponse.redirect(new URL(roleHome[role], req.url));
   }
