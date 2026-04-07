@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
+const contactEmail =
+  process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "support@capitalarchitect.tech";
+
 const strategyCallUrl =
   process.env.NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL ||
-  "https://calendly.com/capital-architect/strategy-call";
+  `mailto:${contactEmail}?subject=Capital%20Architect%20Strategy%20Call`;
 
 export default function ReadyPage() {
   return (

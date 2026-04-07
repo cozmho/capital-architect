@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 
+const contactEmail =
+  process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "support@capitalarchitect.tech";
+
 const prepCheckoutUrl =
   process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL ||
-  "https://buy.stripe.com/capital-architect-membership";
+  `mailto:${contactEmail}?subject=Capital%20Architect%20Funding%20Readiness%20Intensive`;
 
 export default function PrepPage() {
   return (

@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 
+const contactEmail =
+  process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "support@capitalarchitect.tech";
+
 const repairKitUrl =
   process.env.NEXT_PUBLIC_REPAIR_KIT_URL ||
-  "https://capitalarchitect.tech/products/repair-kit";
+  `mailto:${contactEmail}?subject=Capital%20Architect%20Repair%20Kit`;
 
 export default function RepairPage() {
   return (
