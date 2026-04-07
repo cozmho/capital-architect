@@ -11,7 +11,7 @@
     "prisma:generate": "prisma generate",
     "postinstall": "npm run prisma:generate",
     "audit:gate": "node scripts/audit-gate.mjs",
-    "health": "npx ts-node scripts/health-check.ts"
+    "health": "npx ts-node --esm scripts/health-check.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.8",

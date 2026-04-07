@@ -25,13 +25,20 @@ export function hasValidClerkSecretKey(secretKey: string): boolean {
  */
 export function getUserRole(sessionClaims: Record<string, unknown> | null): string | undefined {
   if (!sessionClaims) return undefined;
-  
+
   const claims = sessionClaims as {
+    role?: string;
     metadata?: { role?: string };
     publicMetadata?: { role?: string };
+    public_metadata?: { role?: string };
   };
-  
-  return claims.metadata?.role ?? claims.publicMetadata?.role;
+
+  return (
+    claims.role ??
+    claims.metadata?.role ??
+    claims.publicMetadata?.role ??
+    claims.public_metadata?.role
+  );
 }
 
 /**
@@ -40,14 +47,22 @@ export function getUserRole(sessionClaims: Record<string, unknown> | null): stri
  */
 export function hasPaidMembership(sessionClaims: Record<string, unknown> | null): boolean {
   if (!sessionClaims) return false;
-  
+
   const claims = sessionClaims as {
+    hasPaidMembership?: boolean;
+    has_paid_membership?: boolean;
     metadata?: { hasPaidMembership?: boolean };
     publicMetadata?: { hasPaidMembership?: boolean };
+    public_metadata?: { hasPaidMembership?: boolean; has_paid_membership?: boolean };
   };
-  
+
   return Boolean(
-    claims.metadata?.hasPaidMembership ?? claims.publicMetadata?.hasPaidMembership
+    claims.hasPaidMembership ??
+      claims.has_paid_membership ??
+      claims.metadata?.hasPaidMembership ??
+      claims.publicMetadata?.hasPaidMembership ??
+      claims.public_metadata?.hasPaidMembership ??
+      claims.public_metadata?.has_paid_membership
   );
 }
 
