@@ -32,7 +32,7 @@
     No administrator rights are needed unless winget requires elevation for your machine.
 #>
 
-[CmdletBinding(SupportsShouldProcess)]
+[CmdletBinding]
 param (
     [string]$ExportDir = $PSScriptRoot,
     [switch]$SkipWinget,
@@ -85,6 +85,7 @@ function Export-Extensions {
 }
 
 function Update-Extensions {
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [string]$CLI,
         [string]$Label
@@ -99,8 +100,13 @@ function Update-Extensions {
 
     $list = $extensions | Where-Object { $_ -match '\S' }
     $total = $list.Count
-    $i = 0
 
+    if (-not $PSCmdlet.ShouldProcess($Label, "Update $total extensions")) {
+        Write-Warn "Skipped: $Label extension update (ShouldProcess declined)."
+        return
+    }
+
+    $i = 0
     foreach ($ext in $list) {
         $i++
         Write-Host "  [$i/$total] $ext" -ForegroundColor DarkGray
@@ -114,6 +120,7 @@ function Update-Extensions {
 }
 
 function Update-VSCodeViaWinget {
+    [CmdletBinding(SupportsShouldProcess)]
     param([string]$PackageId, [string]$Label)
 
     Write-Step "Upgrading $Label via winget (best-effort)"
@@ -123,7 +130,13 @@ function Update-VSCodeViaWinget {
         return
     }
 
-    & winget upgrade --id $PackageId --silent --accept-package-agreements --accept-source-agreements 2>&1
+    $action = "winget upgrade --id $PackageId --silent --accept-package-agreements --accept-source-agreements"
+    if (-not $PSCmdlet.ShouldProcess($Label, $action)) {
+        Write-Warn "Skipped: $Label upgrade (ShouldProcess declined)."
+        return
+    }
+
+    & $winget upgrade --id $PackageId --silent --accept-package-agreements --accept-source-agreements 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Success "$Label upgraded (or already up-to-date)."
     }

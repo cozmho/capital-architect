@@ -34,7 +34,7 @@
     No administrator rights required.
 #>
 
-[CmdletBinding(SupportsShouldProcess)]
+[CmdletBinding]
 param (
     [Parameter(Mandatory)]
     [string]$ExtensionFile,
