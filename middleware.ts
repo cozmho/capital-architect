@@ -73,6 +73,11 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
 
   if (role === requiredRole) return;
 
+  // YOLO MODE: Log the user ID to the terminal so the dev can find it easily!
+  if (requiredRole === 'admin' && !hasGodModeOverride(userId)) {
+     console.log("\n\n==== 🚨 GOD MODE ACCESS DENIED ====\nYour Clerk User ID is:", userId, "\nAdd this to GOD_MODE_USER_IDS in your .env.local to finish God Mode setup!\n===================================\n\n");
+  }
+
   if (role && roleHome[role]) {
     return NextResponse.redirect(new URL(roleHome[role], req.url));
   }
