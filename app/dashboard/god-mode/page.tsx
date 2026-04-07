@@ -22,6 +22,7 @@ function formatAdb(adb: number): string {
 
 export default async function GodModeCommandPage() {
   const { userId } = await auth();
+  const isDevelopment = process.env.NODE_ENV !== "production";
   const prisma = getPrismaClient();
   const [totalLeads, tierALeads, tierBLeads, recentPipeline] = await Promise.all([
     prisma.lead.count(),
@@ -79,7 +80,7 @@ export default async function GodModeCommandPage() {
                 <Activity className="h-4 w-4 text-cyan-300" />
                 Live mode
               </div>
-              {userId && (
+              {userId && isDevelopment && (
                 <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700/50 bg-zinc-900/50 px-4 py-2 text-xs text-zinc-400">
                   <Key className="h-3 w-3 text-amber-400" />
                   Your Clerk ID: <span className="font-mono text-zinc-300">{userId}</span>
