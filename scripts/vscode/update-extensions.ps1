@@ -42,7 +42,7 @@ param (
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# ── helpers ────────────────────────────────────────────────────────────────────
+# -- helpers --------------------------------------------------------------------
 
 function Write-Step {
     param([string]$Message)
@@ -51,12 +51,12 @@ function Write-Step {
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "  ✓ $Message" -ForegroundColor Green
+    Write-Host "  [OK] $Message" -ForegroundColor Green
 }
 
 function Write-Warn {
     param([string]$Message)
-    Write-Host "  ⚠ $Message" -ForegroundColor Yellow
+    Write-Host "  [!!] $Message" -ForegroundColor Yellow
 }
 
 function Get-CLIPath {
@@ -65,17 +65,17 @@ function Get-CLIPath {
     return $found ? $found.Source : $null
 }
 
-function Export-Extensions {
+function Export-Extension {
     param(
         [string]$CLI,
         [string]$Label,
         [string]$ExportPath
     )
 
-    Write-Step "Exporting $Label extensions → $ExportPath"
+    Write-Step "Exporting $Label extensions -> $ExportPath"
     $extensions = & $CLI --list-extensions 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Warn "Could not list extensions from $CLI — skipping export."
+        Write-Warn "Could not list extensions from $CLI -- skipping export."
         return $false
     }
     $extensions | Set-Content -Path $ExportPath -Encoding UTF8
@@ -84,7 +84,8 @@ function Export-Extensions {
     return $true
 }
 
-function Update-Extensions {
+function Update-Extension {
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [string]$CLI,
         [string]$Label
@@ -93,7 +94,7 @@ function Update-Extensions {
     Write-Step "Updating all $Label extensions"
     $extensions = & $CLI --list-extensions 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Warn "Could not list extensions from $CLI — skipping update."
+        Write-Warn "Could not list extensions from $CLI -- skipping update."
         return
     }
 
@@ -114,12 +115,13 @@ function Update-Extensions {
 }
 
 function Update-VSCodeViaWinget {
+    [CmdletBinding(SupportsShouldProcess)]
     param([string]$PackageId, [string]$Label)
 
     Write-Step "Upgrading $Label via winget (best-effort)"
     $winget = Get-CLIPath 'winget'
     if (-not $winget) {
-        Write-Warn "winget not found — skipping VS Code self-upgrade."
+        Write-Warn "winget not found -- skipping VS Code self-upgrade."
         return
     }
 
@@ -128,11 +130,11 @@ function Update-VSCodeViaWinget {
         Write-Success "$Label upgraded (or already up-to-date)."
     }
     else {
-        Write-Warn "$Label winget upgrade returned a non-zero exit code ($LASTEXITCODE) — this is usually benign (already current)."
+        Write-Warn "$Label winget upgrade returned a non-zero exit code ($LASTEXITCODE) -- this is usually benign (already current)."
     }
 }
 
-# ── main ───────────────────────────────────────────────────────────────────────
+# -- main -----------------------------------------------------------------------
 
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $exitCode = 0
@@ -142,43 +144,43 @@ if (-not (Test-Path $ExportDir)) {
     New-Item -ItemType Directory -Path $ExportDir | Out-Null
 }
 
-# ── VS Code Stable ─────────────────────────────────────────────────────────────
+# -- VS Code Stable -------------------------------------------------------------
 $codeCLI = Get-CLIPath 'code'
 if ($codeCLI) {
     $exportFile = Join-Path $ExportDir "extensions-stable-$timestamp.txt"
-    Export-Extensions -CLI $codeCLI -Label 'VS Code Stable' -ExportPath $exportFile
-    Update-Extensions -CLI $codeCLI -Label 'VS Code Stable'
+    Export-Extension -CLI $codeCLI -Label 'VS Code Stable' -ExportPath $exportFile
+    Update-Extension -CLI $codeCLI -Label 'VS Code Stable'
 
     if (-not $SkipWinget) {
         Update-VSCodeViaWinget -PackageId 'Microsoft.VisualStudioCode' -Label 'VS Code Stable'
     }
 }
 else {
-    Write-Warn "'code' CLI not found on PATH — VS Code Stable skipped."
+    Write-Warn "'code' CLI not found on PATH -- VS Code Stable skipped."
     Write-Warn "Add VS Code to PATH: Code > Help > Shell Command > Install 'code' command."
     $exitCode = 1
 }
 
-# ── VS Code Insiders (optional) ────────────────────────────────────────────────
+# -- VS Code Insiders (optional) ------------------------------------------------
 if ($IncludeInsiders) {
     $insidersCLI = Get-CLIPath 'code-insiders'
     if ($insidersCLI) {
         $exportFile = Join-Path $ExportDir "extensions-insiders-$timestamp.txt"
-        Export-Extensions -CLI $insidersCLI -Label 'VS Code Insiders' -ExportPath $exportFile
-        Update-Extensions -CLI $insidersCLI -Label 'VS Code Insiders'
+        Export-Extension -CLI $insidersCLI -Label 'VS Code Insiders' -ExportPath $exportFile
+        Update-Extension -CLI $insidersCLI -Label 'VS Code Insiders'
 
         if (-not $SkipWinget) {
             Update-VSCodeViaWinget -PackageId 'Microsoft.VisualStudioCode.Insiders' -Label 'VS Code Insiders'
         }
     }
     else {
-        Write-Warn "'code-insiders' CLI not found on PATH — Insiders skipped."
+        Write-Warn "'code-insiders' CLI not found on PATH -- Insiders skipped."
     }
 }
 
-# ── summary ────────────────────────────────────────────────────────────────────
+# -- summary --------------------------------------------------------------------
 Write-Host ''
-Write-Host '─────────────────────────────────────────' -ForegroundColor DarkGray
+Write-Host '-----------------------------------------' -ForegroundColor DarkGray
 if ($exitCode -eq 0) {
     Write-Host 'Done. Restart VS Code to activate updated extensions.' -ForegroundColor Green
 }
@@ -186,6 +188,6 @@ else {
     Write-Host 'Completed with warnings. See messages above.' -ForegroundColor Yellow
 }
 Write-Host "Export saved to: $ExportDir" -ForegroundColor DarkGray
-Write-Host '─────────────────────────────────────────' -ForegroundColor DarkGray
+Write-Host '-----------------------------------------' -ForegroundColor DarkGray
 
 exit $exitCode

@@ -47,7 +47,7 @@ param (
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# ── helpers ────────────────────────────────────────────────────────────────────
+# -- helpers --------------------------------------------------------------------
 
 function Write-Step {
     param([string]$Message)
@@ -56,15 +56,15 @@ function Write-Step {
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "  ✓ $Message" -ForegroundColor Green
+    Write-Host "  [OK] $Message" -ForegroundColor Green
 }
 
 function Write-Warn {
     param([string]$Message)
-    Write-Host "  ⚠ $Message" -ForegroundColor Yellow
+    Write-Host "  [!!] $Message" -ForegroundColor Yellow
 }
 
-# ── validate inputs ─────────────────────────────────────────────────────────────
+# -- validate inputs -------------------------------------------------------------
 
 if (-not (Test-Path $ExtensionFile)) {
     Write-Host "ERROR: Extension file not found: $ExtensionFile" -ForegroundColor Red
@@ -76,27 +76,27 @@ $cliPath = Get-Command $cliCommand -ErrorAction SilentlyContinue
 if (-not $cliPath) {
     Write-Host "ERROR: '$cliCommand' CLI not found on PATH." -ForegroundColor Red
     if (-not $Insiders) {
-        Write-Host "  → In VS Code: Help > Shell Command > Install 'code' command in PATH" -ForegroundColor Yellow
+        Write-Host "  -> In VS Code: Help > Shell Command > Install 'code' command in PATH" -ForegroundColor Yellow
     }
     exit 1
 }
 
 $label = $Insiders ? 'VS Code Insiders' : 'VS Code Stable'
 
-# ── read extension list ─────────────────────────────────────────────────────────
+# -- read extension list ---------------------------------------------------------
 
 $extensions = Get-Content -Path $ExtensionFile |
     Where-Object { $_ -match '\S' } |   # remove blank lines
     Where-Object { $_ -notmatch '^\s*#' }  # remove comment lines
 
 if ($extensions.Count -eq 0) {
-    Write-Warn "No extensions found in $ExtensionFile — nothing to do."
+    Write-Warn "No extensions found in $ExtensionFile -- nothing to do."
     exit 0
 }
 
 Write-Step "Installing $($extensions.Count) extensions into $label"
 
-# ── install loop ───────────────────────────────────────────────────────────────
+# -- install loop ---------------------------------------------------------------
 
 $failed = [System.Collections.Generic.List[string]]::new()
 $i = 0
@@ -116,10 +116,10 @@ foreach ($ext in $extensions) {
     }
 }
 
-# ── summary ────────────────────────────────────────────────────────────────────
+# -- summary --------------------------------------------------------------------
 
 Write-Host ''
-Write-Host '─────────────────────────────────────────' -ForegroundColor DarkGray
+Write-Host '-----------------------------------------' -ForegroundColor DarkGray
 $succeeded = $extensions.Count - $failed.Count
 Write-Host "$succeeded / $($extensions.Count) extensions installed successfully." -ForegroundColor Green
 
@@ -129,10 +129,10 @@ if ($failed.Count -gt 0) {
     $failed | ForEach-Object { Write-Host "  - $_" -ForegroundColor Yellow }
     Write-Host ''
     Write-Host 'Tip: Check View > Output > Extensions in VS Code for details.' -ForegroundColor DarkGray
-    Write-Host '─────────────────────────────────────────' -ForegroundColor DarkGray
+    Write-Host '-----------------------------------------' -ForegroundColor DarkGray
     exit 1
 }
 
 Write-Host 'All done. Restart VS Code to activate the installed extensions.' -ForegroundColor Green
-Write-Host '─────────────────────────────────────────' -ForegroundColor DarkGray
+Write-Host '-----------------------------------------' -ForegroundColor DarkGray
 exit 0
