@@ -7,7 +7,7 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id // Clerk User ID (user_...)
   email     String   @unique
   role      String   @default("SETTER")
   createdAt DateTime @default(now())

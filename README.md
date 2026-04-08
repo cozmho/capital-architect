@@ -33,9 +33,9 @@ npm install
 - `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.tech`)
 
 **Database URL Notes:**
-- `DATABASE_URL`: Uses the Supabase direct connection (port 5432) for both runtime queries and Prisma operations
-- `DIRECT_URL`: Also uses the direct connection (port 5432) — required explicitly for Prisma CLI migration commands
-- Both point to the same database endpoint; port 5432 direct is required (the pooler on port 6543 is not supported with the `@prisma/adapter-pg` driver)
+- `DATABASE_URL`: Uses the Supabase connection pooler (port 6543) for high concurrency Server Actions (requires `?pgbouncer=true`)
+- `DIRECT_URL`: Uses the Supabase direct connection (port 5432) — required explicitly for Prisma CLI migration commands
+- Both point to the same database endpoint; the pooler on port 6543 is recommended for high concurrency Server Actions (standard Prisma connection pooler supports it natively with `?pgbouncer=true`).
 
 1. Start development:
 

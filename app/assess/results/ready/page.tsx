@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
+import DownloadReportButton from "@/app/_components/DownloadReportButton";
 
 const contactEmail =
   process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "support@capitalarchitect.tech";
@@ -11,7 +12,7 @@ const strategyCallUrl =
 export default function ReadyPage() {
   return (
     <main className="min-h-screen bg-[#060A14] px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-3xl text-center">
+      <div id="report-pdf" className="mx-auto max-w-3xl text-center">
         <div className="mb-8 flex justify-center">
           <div className="rounded-full bg-[#C8A84B]/20 p-6">
             <CheckCircle2 className="h-16 w-16 text-[#C8A84B]" />
@@ -60,6 +61,7 @@ export default function ReadyPage() {
           </div>
         </div>
       </div>
+      <DownloadReportButton fileName="Capital-Architect-TierA-Report.pdf" targetId="report-pdf" />
     </main>
   );
 }

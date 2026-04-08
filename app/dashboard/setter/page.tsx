@@ -1,5 +1,6 @@
 import { Activity, ClipboardList, FileClock, FolderKanban, Users } from "lucide-react";
 import { getPrismaClient } from "@/lib/prisma";
+import { StatusToggle } from "./_components/StatusToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -126,10 +127,10 @@ export default async function SetterDashboardPage() {
                 return (
                   <li key={task.id} className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
+                      <div className="flex-1">
                         <p className="text-sm text-zinc-300">{task.businessName}</p>
                         <p className="mt-1 text-base font-medium text-white">{nextSetterTask(task.status)}</p>
-                        <p className="mt-2 text-sm text-zinc-400">Status: {task.status}</p>
+                        <StatusToggle leadId={task.id} currentStatus={task.status} />
                       </div>
                       <span
                         className={`rounded-md px-2 py-1 text-xs font-medium ${

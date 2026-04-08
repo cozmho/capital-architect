@@ -8,11 +8,22 @@ import {
 import './globals.css'
 import { hasValidClerkPublishableKey } from '@/lib/clerk-utils'
 import { Analytics } from '@vercel/analytics/next'
+import { syncUser } from '@/app/actions/user'
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? ''
 const isClerkConfigured = hasValidClerkPublishableKey(publishableKey)
 
-export default function RootLayout({
+/**
+ * ClerkSync is a small server component that ensures the user is mirrored in Prisma.
+ * It's placed inside the layout to trigger on every page load when a user is logged in.
+ */
+async function ClerkSync() {
+  if (!isClerkConfigured) return null
+  await syncUser()
+  return null
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
@@ -38,6 +49,7 @@ export default function RootLayout({
           </Show>
         </div>
       </header>
+      <ClerkSync />
       {children}
     </ClerkProvider>
   ) : (

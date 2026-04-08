@@ -1,6 +1,7 @@
 "use server";
 
 import { getPrismaClient } from "@/lib/prisma";
+import { generateLeadFeedback } from "@/lib/gemini";
 
 const prisma = getPrismaClient();
 
@@ -51,29 +52,19 @@ type IntakeResult = {
   success: boolean;
   leadId: string;
   fundabilityScore: number;
+  tier: string;
   message: string;
+  aiFeedback: string;
 };
 
 export async function processIntake(payload: IntakePayload): Promise<IntakeResult> {
   try {
     // Calculate fundability score with baseline algorithm
-    let fundabilityScore = 100;
-
-    // Deduct 10 points for every Metro 2 error
-    fundabilityScore -= payload.metro2ErrorCount * 10;
-
-    // Deduct 15 points if recent inquiries > 4
-    if (payload.recentInquiries > 4) {
-      fundabilityScore -= 15;
-    }
-
-    // Add 20 points if entityType is "Private Trust" or "LLC"
-    if (payload.entityType === "Private Trust" || payload.entityType === "LLC") {
-      fundabilityScore += 20;
-    }
-
-    // Clamp score to 0-100
-    fundabilityScore = Math.max(0, Math.min(100, fundabilityScore));
+    const fundabilityScore = await calculateFundabilityScore({
+      metro2ErrorCount: payload.metro2ErrorCount,
+      recentInquiries: payload.recentInquiries,
+      entityType: payload.entityType,
+    });
 
     // Determine tier based on score
     let tier: string;
@@ -84,6 +75,9 @@ export async function processIntake(payload: IntakePayload): Promise<IntakeResul
     } else {
       tier = "C";
     }
+
+    // Generate custom 2-sentence AI feedback
+    const aiFeedback = await generateLeadFeedback(fundabilityScore, payload.businessName, tier);
 
     // `email` is indexed but not unique, so use find/update-or-create instead of upsert.
     const resolvedEmail =
@@ -112,6 +106,7 @@ export async function processIntake(payload: IntakePayload): Promise<IntakeResul
             fundabilityScore,
             tier,
             status: "INTAKE_COMPLETE",
+            notes: aiFeedback, // Store AI feedback in notes
           },
         })
       : await prisma.lead.create({
@@ -126,6 +121,7 @@ export async function processIntake(payload: IntakePayload): Promise<IntakeResul
             tier,
             status: "INTAKE_COMPLETE",
             source: "client_dashboard",
+            notes: aiFeedback, // Store AI feedback in notes
           },
         });
 
@@ -133,6 +129,8 @@ export async function processIntake(payload: IntakePayload): Promise<IntakeResul
       success: true,
       leadId: lead.id,
       fundabilityScore,
+      tier,
+      aiFeedback,
       message: `Intake saved successfully. Fundability Score: ${fundabilityScore}. Tier: ${tier}`,
     };
   } catch (error) {

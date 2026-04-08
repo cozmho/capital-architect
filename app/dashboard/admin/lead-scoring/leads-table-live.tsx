@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type VerdictTier = "A" | "B" | "C" | "UNSCORED";
 
@@ -188,12 +189,14 @@ export default function LeadsTableLive({
                     className="border-b border-zinc-800/50 transition hover:bg-zinc-800/30"
                   >
                     <td className="px-6 py-4">
-                      <div className="text-sm">
-                        <p className="font-medium text-zinc-200">
-                          {lead.businessName || lead.ownerName || "Unknown"}
-                        </p>
-                        {lead.email && <p className="text-xs text-zinc-500">{lead.email}</p>}
-                      </div>
+                      <Link href={`/dashboard/admin/leads/${lead.id}`} className="group block">
+                        <div className="text-sm">
+                          <p className="font-medium text-zinc-200 group-hover:text-[#C8A84B] transition-colors">
+                            {lead.businessName || lead.ownerName || "Unknown"}
+                          </p>
+                          {lead.email && <p className="text-xs text-zinc-500">{lead.email}</p>}
+                        </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-lg font-semibold text-white">
