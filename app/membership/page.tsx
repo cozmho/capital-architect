@@ -2,10 +2,55 @@ import Link from "next/link";
 import { ArrowRight, CalendarCheck2, CheckCircle2, Clock3, Crown, Mail, ShieldCheck } from "lucide-react";
 import { TrackedExternalLink } from "./tracked-external-link";
 
-export default function MembershipPage() {
+type MembershipPageProps = {
+  searchParams?: {
+    tier?: string | string[];
+  };
+};
+
+function getTierValue(tier: string | string[] | undefined): "A" | "B" | "C" | null {
+  const normalized = (Array.isArray(tier) ? tier[0] : tier)?.toUpperCase();
+  if (normalized === "A" || normalized === "B" || normalized === "C") return normalized;
+  return null;
+}
+
+export default function MembershipPage({ searchParams }: MembershipPageProps) {
+  const tier = getTierValue(searchParams?.tier);
+
   const checkoutUrl = process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL;
+  const tierBCheckoutUrl = process.env.NEXT_PUBLIC_TIER_B_STRIPE_URL || checkoutUrl;
   const bookingUrl = process.env.NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL;
+  const repairKitUrl = process.env.NEXT_PUBLIC_REPAIR_KIT_URL;
   const contactEmail = process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "support@capitalarchitect.tech";
+
+  const tierLabel = tier ? `Tier ${tier} Path` : "General Membership Path";
+
+  const primaryAction =
+    tier === "A"
+      ? {
+          href: bookingUrl || `mailto:${contactEmail}?subject=Capital%20Architect%20Strategy%20Call`,
+          text: "Book Your Strategy Call",
+          event: "membership_call_click" as const,
+        }
+      : tier === "B"
+      ? {
+          href:
+            tierBCheckoutUrl ||
+            `mailto:${contactEmail}?subject=Capital%20Architect%20Funding%20Readiness%20Intensive`,
+          text: "Start Tier B Intensive Checkout",
+          event: "membership_checkout_click" as const,
+        }
+      : tier === "C"
+      ? {
+          href: repairKitUrl || `mailto:${contactEmail}?subject=Capital%20Architect%20Repair%20Kit`,
+          text: "Get the DIY Repair Kit",
+          event: "membership_contact_click" as const,
+        }
+      : {
+          href: checkoutUrl || `mailto:${contactEmail}?subject=Capital%20Architect%20Membership`,
+          text: checkoutUrl ? "Start Membership Checkout" : "Request Membership Access",
+          event: checkoutUrl ? ("membership_checkout_click" as const) : ("membership_contact_click" as const),
+        };
 
   return (
     <main className="min-h-screen bg-linear-to-br from-zinc-950 via-zinc-900 to-black px-6 py-10 text-zinc-100 lg:px-10">
@@ -16,6 +61,9 @@ export default function MembershipPage() {
           <p className="mt-3 max-w-3xl text-sm text-zinc-300">
             Intake submission is free. Full progress tracking, milestone updates, and private client portal access are available with a paid membership.
           </p>
+          <div className="mt-4 inline-flex rounded-full border border-[#C8A84B]/40 bg-[#C8A84B]/10 px-3 py-1 text-xs font-semibold tracking-[0.12em] text-[#C8A84B] uppercase">
+            {tierLabel}
+          </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/intake"
@@ -23,27 +71,17 @@ export default function MembershipPage() {
             >
               Submit Free Intake
             </Link>
-            {checkoutUrl ? (
-              <TrackedExternalLink
-                href={checkoutUrl}
-                target="_blank"
-                rel="noreferrer"
-                eventName="membership_checkout_click"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/60 bg-emerald-500/20 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/30"
-              >
-                Start Membership Checkout
-                <ArrowRight className="h-4 w-4" />
-              </TrackedExternalLink>
-            ) : (
-              <TrackedExternalLink
-                href={`mailto:${contactEmail}?subject=Capital%20Architect%20Membership`}
-                eventName="membership_contact_click"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/60 bg-emerald-500/20 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/30"
-              >
-                <Mail className="h-4 w-4" />
-                Request Membership Access
-              </TrackedExternalLink>
-            )}
+            <TrackedExternalLink
+              href={primaryAction.href}
+              target="_blank"
+              rel="noreferrer"
+              eventName={primaryAction.event}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/60 bg-emerald-500/20 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/30"
+            >
+              {tier === null ? <Mail className="h-4 w-4" /> : null}
+              {primaryAction.text}
+              <ArrowRight className="h-4 w-4" />
+            </TrackedExternalLink>
             {bookingUrl ? (
               <TrackedExternalLink
                 href={bookingUrl}

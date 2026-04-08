@@ -5,6 +5,7 @@ const contactEmail =
   process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "support@capitalarchitect.tech";
 
 const prepCheckoutUrl =
+  process.env.NEXT_PUBLIC_TIER_B_STRIPE_URL ||
   process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL ||
   `mailto:${contactEmail}?subject=Capital%20Architect%20Funding%20Readiness%20Intensive`;
 
