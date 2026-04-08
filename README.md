@@ -27,6 +27,7 @@ npm install
 - `INTAKE_API_KEY` (optional but recommended for external intake calls)
 - `GOD_MODE_USER_IDS` (optional; comma-separated Clerk user IDs granted admin/god-mode access override)
 - `NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL` (optional; primary checkout action on `/membership`)
+- `NEXT_PUBLIC_TIER_B_STRIPE_URL` (optional; dedicated Tier B Stripe checkout used on `/assess/results/prep` and as membership checkout priority)
 - `NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL` (optional; secondary booking action on `/membership`)
 - `NEXT_PUBLIC_REPAIR_KIT_URL` (optional; repair kit CTA on `/assess/results/repair`)
 - `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.tech`)
@@ -52,6 +53,50 @@ npm run dev
 - `npm run prisma:generate` regenerates Prisma client types
 - `npm run build` builds production output
 - `npm run start` runs the production server
+- `npm run test:e2e` runs Playwright smoke tests
+- `npm run test:e2e:ui` runs Playwright in UI mode for local debugging
+
+## Playwright Smoke Tests
+
+This repository includes Playwright smoke tests for:
+
+- Assessment tier redirects (`/assess` -> `ready`, `prep`, `repair`)
+- Auth route availability (`/sign-in`, `/sign-up`)
+- Protected admin access behavior (`/dashboard/admin/scoring`) using Clerk test auth
+
+### Local run
+
+1. Ensure app env vars are configured (`DATABASE_URL`, Clerk keys, etc.).
+2. Optionally set `CLERK_TESTING_TOKEN` to enable the admin-auth smoke test.
+3. Run:
+
+```bash
+npm run test:e2e
+```
+
+By default, Playwright starts a local dev server at `http://localhost:3000`. To run against an existing deployment, set `BASE_URL`.
+
+### GitHub Actions preview workflow
+
+Workflow: `.github/workflows/e2e-preview.yml`
+
+On each push and pull request, the workflow:
+
+1. Builds and deploys a preview using Vercel CLI.
+2. Sets `BASE_URL` to that preview deployment.
+3. Runs Playwright smoke tests against the deployed URL.
+
+Required GitHub secrets:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+- `CLERK_TESTING_TOKEN` (required to execute Clerk sign-in smoke test)
+- `TEST_USER_EMAIL` (email of the Clerk test user used by the smoke test)
+
+Optional GitHub variable:
+
+- `TEST_USER_IS_ADMIN` (`true` when the Clerk test identity should have admin access)
 
 ## Project Layout
 
