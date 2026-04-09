@@ -102,6 +102,7 @@ Optional GitHub variable:
 
 - `app/` App Router routes and layouts
 - `app/api/intake/route.ts` intake endpoint with tiering and idempotent upsert
+- `app/actions/scoring.ts` institutional-grade scoring engine incorporating FICO, monthly revenue, and time in business
 - `app/dashboard/*` role-specific dashboard views
 - `middleware.ts` dashboard protection and role redirects
 - `lib/prisma.ts` Prisma runtime client singleton
