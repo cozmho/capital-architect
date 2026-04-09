@@ -5,6 +5,7 @@ import {
   type ThinkingConfig
 } from "@google/genai";
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 type ThinkingLevelInput = "minimal" | "low" | "medium" | "high";
 
@@ -52,6 +53,11 @@ function extractThoughtSummaries(response: unknown): string[] {
 }
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(

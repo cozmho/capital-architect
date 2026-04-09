@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,14 @@ const NO_STORE_HEADERS = {
 };
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: NO_STORE_HEADERS }
+    );
+  }
+
   // Avoid crashing build/CI environments that don't have a DB configured
   if (!process.env.DATABASE_URL) {
     return NextResponse.json(
