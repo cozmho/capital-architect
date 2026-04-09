@@ -28,32 +28,32 @@ export default async function Home() {
         <article className="rounded-2xl border border-zinc-800/80 bg-zinc-900/65 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-sm">
           <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Capital Architect</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white md:text-5xl">
-            Business Funding Qualification, Simplified
+            We fund you in 60 days when everyone else says no.
           </h1>
           <p className="mt-4 max-w-2xl text-base text-zinc-300 md:text-lg">
-            Start with a quick intake and receive a clear qualification path tailored to your business profile.
+            Skip the bank runaround. Take our 60-Second Fundability Assessment and see exactly where you qualify—no jargon, no hedging, just your capital path.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/intake"
+              href="/assess"
               className="inline-flex items-center justify-center rounded-xl border border-cyan-500/60 bg-cyan-500/20 px-5 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/30"
             >
-              Start Intake
+              Start Fundability Assessment
             </Link>
             {canAccessClientDashboard ? (
               <Link
                 href="/dashboard/client"
                 className="inline-flex items-center justify-center rounded-xl border border-emerald-500/60 bg-emerald-500/15 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
               >
-                Open Client Dashboard
+                Access Your Funding Path
               </Link>
             ) : (
               <Link
                 href="/membership"
                 className="inline-flex items-center justify-center rounded-xl border border-amber-500/60 bg-amber-500/15 px-5 py-3 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/25"
               >
-                Unlock Membership Dashboard
+                Unlock Your Capital Plan
               </Link>
             )}
             {canAccessCommandDashboard ? (
@@ -68,21 +68,21 @@ export default async function Home() {
         </article>
 
         <aside className="rounded-2xl border border-zinc-800/80 bg-zinc-900/65 p-8 backdrop-blur-sm">
-          <h2 className="text-xl font-semibold text-white">What You Get</h2>
-          <ul className="mt-5 space-y-4 text-sm text-zinc-300">
+          <h2 className="text-xl font-semibold text-white mb-2">See where you qualify</h2>
+          <p className="text-sm text-zinc-300 mb-5">Every business is different. Here’s how we route you to the right capital path—no jargon, just outcomes:</p>
+          <ul className="space-y-4 text-sm text-zinc-300">
             <li>
-              Fast eligibility review based on your submitted profile.
+              <span className="font-semibold text-amber-300">Tier A:</span> 0% APR business credit + SBA pathway <span className="text-zinc-400">(60–90 days, $50K–$500K)</span>
             </li>
             <li>
-              Clear next steps tailored to your current funding readiness.
+              <span className="font-semibold text-cyan-300">Tier B:</span> Unsecured lines + merchant funding <span className="text-zinc-400">(30–45 days, $25K–$250K)</span>
             </li>
             <li>
-              Membership portal access for progress tracking (paid tier).
+              <span className="font-semibold text-rose-300">Tier C:</span> Credit repair + DIY toolkit + next-tier strategy <span className="text-zinc-400">($497 self-serve)</span>
             </li>
           </ul>
-
           <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4 text-xs text-zinc-400">
-            Member dashboard access is reserved for authorized accounts.
+            <span className="font-semibold text-green-300">Proof:</span> 7 of our first 10 clients got funded.
           </div>
         </aside>
       </section>
