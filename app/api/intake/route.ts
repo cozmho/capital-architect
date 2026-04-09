@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { getPrismaClient } from "@/lib/prisma";
 
@@ -194,6 +195,12 @@ export async function POST(request: Request) {
       nsfs: nsfsValue,
     },
   });
+
+  try {
+    revalidatePath("/dashboard/admin/scoring");
+  } catch (revalidationError) {
+    console.error("Intake revalidation warning:", revalidationError);
+  }
 
   return NextResponse.json({
     ok: true,

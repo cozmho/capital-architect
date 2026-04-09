@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getPrismaClient } from "@/lib/prisma";
 import { calculateFundabilityScore } from "./scoring";
 
@@ -56,6 +57,12 @@ export async function processAssessment(input: AssessmentInput): Promise<Assessm
         source: "public_assessment",
       },
     });
+
+    try {
+      revalidatePath("/dashboard/admin/scoring");
+    } catch (revalidationError) {
+      console.error("Assessment revalidation warning:", revalidationError);
+    }
 
     return {
       success: true,

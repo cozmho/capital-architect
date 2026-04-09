@@ -87,6 +87,12 @@ const ALLOWED_ADVISORIES = [
     reason: "Transitive through Prisma parser toolchain (chevrotain via @mrleebo/prisma-ast).",
     expiresOn: ALLOWLIST_EXPIRES_ON,
   },
+  {
+    ghsa: "GHSA-737v-mqg7-c878",
+    package: "defu",
+    reason: "Transitive through Prisma CLI toolchain.",
+    expiresOn: ALLOWLIST_EXPIRES_ON,
+  },
 ];
 
 function parseDateOnly(input) {

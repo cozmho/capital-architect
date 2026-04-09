@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
+import DownloadReportButton from "@/app/_components/DownloadReportButton";
+
+const contactEmail =
+  process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "support@capitalarchitect.tech";
 
 const repairKitUrl =
   process.env.NEXT_PUBLIC_REPAIR_KIT_URL ||
-  "https://capitalarchitect.tech/products/repair-kit";
+  `mailto:${contactEmail}?subject=Capital%20Architect%20Repair%20Kit`;
 
 export default function RepairPage() {
   return (
     <main className="min-h-screen bg-[#060A14] px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-3xl text-center">
+      <div id="report-pdf" className="mx-auto max-w-3xl text-center">
         <div className="mb-8 flex justify-center">
           <div className="rounded-full bg-red-500/20 p-6">
             <AlertCircle className="h-16 w-16 text-red-400" />
@@ -67,6 +71,7 @@ export default function RepairPage() {
           </p>
         </div>
       </div>
+      <DownloadReportButton fileName="Capital-Architect-Repair-Report.pdf" targetId="report-pdf" />
     </main>
   );
 }

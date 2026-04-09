@@ -1,4 +1,5 @@
 import { getPrismaClient } from "@/lib/prisma";
+import { parseGodModeUserIds } from "@/lib/clerk-utils";
 
 export type StatusLevel = "pass" | "warn" | "fail";
 
@@ -83,6 +84,21 @@ export async function runStatusCheck(): Promise<StatusCheckResult> {
       name: "clerk-env",
       status: "pass",
       message: "Clerk environment keys are present",
+    });
+  }
+
+  const godModeUserIds = parseGodModeUserIds();
+  if (godModeUserIds.size === 0) {
+    checks.push({
+      name: "god-mode-env",
+      status: "warn",
+      message: "GOD_MODE_USER_IDS is not configured; owner override access is disabled",
+    });
+  } else {
+    checks.push({
+      name: "god-mode-env",
+      status: "pass",
+      message: `GOD_MODE_USER_IDS configured (${godModeUserIds.size} user${godModeUserIds.size === 1 ? "" : "s"})`,
     });
   }
 

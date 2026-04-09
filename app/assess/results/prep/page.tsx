@@ -1,14 +1,19 @@
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
+import DownloadReportButton from "@/app/_components/DownloadReportButton";
+
+const contactEmail =
+  process.env.NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL || "support@capitalarchitect.tech";
 
 const prepCheckoutUrl =
+  process.env.NEXT_PUBLIC_TIER_B_STRIPE_URL ||
   process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL ||
-  "https://buy.stripe.com/capital-architect-membership";
+  `mailto:${contactEmail}?subject=Capital%20Architect%20Funding%20Readiness%20Intensive`;
 
 export default function PrepPage() {
   return (
     <main className="min-h-screen bg-[#060A14] px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-3xl text-center">
+      <div id="report-pdf" className="mx-auto max-w-3xl text-center">
         <div className="mb-8 flex justify-center">
           <div className="rounded-full bg-yellow-500/20 p-6">
             <TrendingUp className="h-16 w-16 text-yellow-500" />
@@ -62,6 +67,7 @@ export default function PrepPage() {
           </div>
         </div>
       </div>
+      <DownloadReportButton fileName="Capital-Architect-TierB-Report.pdf" targetId="report-pdf" />
     </main>
   );
 }

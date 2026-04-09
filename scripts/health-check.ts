@@ -124,6 +124,18 @@ async function checkClerk() {
   } else {
     addResult("Clerk", "fail", "Invalid Clerk secret key format");
   }
+
+  const godModeRaw = process.env.GOD_MODE_USER_IDS?.trim() || "";
+  const godModeCount = godModeRaw
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean).length;
+
+  if (godModeCount === 0) {
+    addResult("Clerk", "warn", "GOD_MODE_USER_IDS not set - /dashboard/god-mode override access disabled");
+  } else {
+    addResult("Clerk", "pass", `GOD_MODE_USER_IDS configured (${godModeCount} user${godModeCount === 1 ? "" : "s"})`);
+  }
 }
 
 async function checkVercel() {
@@ -158,6 +170,12 @@ async function checkVercel() {
     addResult("Vercel", "fail", `Missing production env vars: ${missingVars.join(", ")}`);
   } else {
     addResult("Vercel", "pass", "All required production env vars configured");
+  }
+
+  if (!envList.includes("GOD_MODE_USER_IDS")) {
+    addResult("Vercel", "warn", "GOD_MODE_USER_IDS missing in production env - owner override access disabled");
+  } else {
+    addResult("Vercel", "pass", "GOD_MODE_USER_IDS configured in production env");
   }
 }
 
