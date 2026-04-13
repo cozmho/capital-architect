@@ -62,7 +62,7 @@ export default function IntakeLayout({
 
       <footer className="footer-minimal">
         <div className="footer-minimal-inner">
-          <span>© 2025 Capital Architect LLC. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Capital Architect LLC. All rights reserved.</span>
           <span>capitalarchitect.tech</span>
         </div>
       </footer>

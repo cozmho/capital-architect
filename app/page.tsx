@@ -715,7 +715,7 @@ export default function HomePage() {
           </div>
 
           <div className="footer-bottom">
-            <span>© 2025 Capital Architect LLC. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} Capital Architect LLC. All rights reserved.</span>
             <span>capitalarchitect.tech</span>
           </div>
         </div>
