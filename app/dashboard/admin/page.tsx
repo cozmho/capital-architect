@@ -1,35 +1,51 @@
 import { prisma } from "@/lib/prisma";
 import { unstable_noStore as noStore } from "next/cache";
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({ searchParams }: {
+  searchParams?: { page?: string; pageSize?: string };
+}) {
   noStore();
   let leads: any[] = [];
   let dbConnected = false;
+  let totalLeadsCount = 0;
+  const currentPage = Number(searchParams?.page) || 1;
+  const pageSize = Number(searchParams?.pageSize) || 10;
 
   try {
     if (process.env.DATABASE_URL) {
-      // Fetch newest leads first
+      // Fetch leads with pagination
       leads = await prisma.capitalLead.findMany({
         orderBy: { createdAt: 'desc' },
+        skip: (currentPage - 1) * pageSize,
+        take: pageSize,
       });
+      totalLeadsCount = await prisma.capitalLead.count();
       dbConnected = true;
     }
   } catch (error) {
     console.error("Failed to connect to Prisma:", error);
   }
 
-  // Calculate some basic God Mode stats if DB is connected
-  const totalLeads = leads.length;
-  const tierA = leads.filter((l) => l.tier === "A").length;
-  const paidLeads = leads.filter((l) => l.hasPaid).length;
+  const [tierA, paidLeads] = dbConnected
+    ? await Promise.all([
+        prisma.capitalLead.count({ where: { tier: "A" } }),
+        prisma.capitalLead.count({ where: { hasPaid: true } }),
+      ])
+    : [0, 0];
+  const totalPages = Math.ceil(totalLeadsCount / pageSize);
 
   return (
     <div className="dash-container" style={{ maxWidth: "1200px" }}>
-      <div className="dash-header">
-        <h1>God Mode</h1>
-        <p className="dash-sub">
-          Master view of all prospect data, Verdic scores, and revenue.
-        </p>
+      <div className="dash-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h1>God Mode</h1>
+          <p className="dash-sub">
+            Master view of all prospect data, Verdic scores, and revenue.
+          </p>
+        </div>
+        <a href="/dashboard/admin/plan" style={{ padding: "8px 16px", background: "var(--bg3)", color: "var(--text)", textDecoration: "none", borderRadius: "6px", fontSize: "14px", fontWeight: "600", border: "1px solid var(--border)" }}>
+          🧠 View Business Plan
+        </a>
       </div>
 
       {!process.env.DATABASE_URL || !dbConnected ? (
@@ -49,7 +65,7 @@ export default async function AdminDashboardPage() {
             <div className="dash-card">
               <span className="score-eyebrow">TOTAL PIPELINE</span>
               <div style={{ fontSize: "40px", fontFamily: "var(--serif)", color: "var(--gold)" }}>
-                {totalLeads}
+                {totalLeadsCount}
               </div>
               <p className="dash-sub-text">Total assessments completed</p>
             </div>
@@ -134,6 +150,40 @@ export default async function AdminDashboardPage() {
               </table>
             </div>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
+              <a
+                href={`/dashboard/admin?page=${Math.max(1, currentPage - 1)}&pageSize=${pageSize}`}
+                style={{ padding: "8px 16px", background: "var(--bg3)", borderRadius: "4px", textDecoration: "none", color: "var(--text)", opacity: currentPage === 1 ? 0.5 : 1, pointerEvents: currentPage === 1 ? "none" : "auto" }}
+              >
+                Previous
+              </a>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <a
+                  key={page}
+                  href={`/dashboard/admin?page=${page}&pageSize=${pageSize}`}
+                  style={{
+                    padding: "8px 12px",
+                    background: page === currentPage ? "var(--gold)" : "var(--bg3)",
+                    borderRadius: "4px",
+                    textDecoration: "none",
+                    color: page === currentPage ? "var(--bg1)" : "var(--text)",
+                    fontWeight: page === currentPage ? "bold" : "normal",
+                  }}
+                >
+                  {page}
+                </a>
+              ))}
+              <a
+                href={`/dashboard/admin?page=${Math.min(totalPages, currentPage + 1)}&pageSize=${pageSize}`}
+                style={{ padding: "8px 16px", background: "var(--bg3)", borderRadius: "4px", textDecoration: "none", color: "var(--text)", opacity: currentPage === totalPages ? 0.5 : 1, pointerEvents: currentPage === totalPages ? "none" : "auto" }}
+              >
+                Next
+              </a>
+            </div>
+          )}
         </>
       )}
     </div>
