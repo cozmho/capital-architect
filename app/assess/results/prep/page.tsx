@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 import DownloadReportButton from "@/app/_components/DownloadReportButton";
@@ -10,18 +13,51 @@ const prepCheckoutUrl =
   process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL ||
   `mailto:${contactEmail}?subject=Capital%20Architect%20Funding%20Readiness%20Intensive`;
 
+interface VerdicData {
+  score: number;
+  tier: string;
+  fullName: string;
+  leadId?: string;
+  email?: string;
+}
+
 export default function PrepPage() {
+  const [data] = useState<VerdicData | null>(() => {
+    if (typeof window === "undefined") return null;
+    const stored = sessionStorage.getItem("verdicResult");
+    return stored ? JSON.parse(stored) : null;
+  });
+
+  const firstName = data?.fullName?.split(" ")[0];
+
   return (
     <main className="min-h-screen bg-[#060A14] px-6 py-16 text-zinc-100">
       <div id="report-pdf" className="mx-auto max-w-3xl text-center">
-        <div className="mb-8 flex justify-center">
-          <div className="rounded-full bg-yellow-500/20 p-6">
-            <TrendingUp className="h-16 w-16 text-yellow-500" />
+        {/* Verdic Score Card */}
+        {data?.score != null && (
+          <div className="results-score-card tier-b" style={{ marginBottom: 32 }}>
+            <div className="score-eyebrow">YOUR VERDIC™ SCORE</div>
+            <div className="score-display">
+              <span className="score-number tier-b-color">{data.score}</span>
+              <span className="score-out-of">/ 100</span>
+            </div>
+            <div className="score-tier-badge tier-b-badge">
+              <span className="tier-letter">B</span>
+              Emerging — Almost There
+            </div>
           </div>
-        </div>
+        )}
+
+        {!data?.score && (
+          <div className="mb-8 flex justify-center">
+            <div className="rounded-full bg-yellow-500/20 p-6">
+              <TrendingUp className="h-16 w-16 text-yellow-500" />
+            </div>
+          </div>
+        )}
 
         <h1 className="font-serif text-5xl font-bold text-white md:text-6xl">
-          You&apos;re Close.
+          {firstName ? `${firstName}, you're close.` : "You're Close."}
         </h1>
         <p className="mt-4 text-2xl font-light text-yellow-500">
           One sprint away from capital.

@@ -48,13 +48,31 @@ model Lead {
   
   // Master Fundability Score
   fundabilityScore Int?
-  
+
+  // Verdic Engine Fields
+  path            String?   // "business" | "pre-business"
+  rawInput        Json?     // Full intake form answers for audit trail
+  hasMetro2Errors Boolean?  // Explicit boolean from Verdic scoring
+
+  // Payment Fields
+  paidAmount       Int?       // Amount in cents
+  paidAt           DateTime?
+  stripeSessionId  String?    @unique
+  stripeCustomerId String?
+  paymentStatus    String?    // "pending" | "paid" | "failed" | "refunded"
+
+  // Follow-up Automation
+  followUpSentAt DateTime?
+  followUpCount  Int        @default(0)
+
   // Timestamps
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
   lastContactedAt DateTime?
-  
+
   @@index([email])
   @@index([tier])
   @@index([status])
+  @@index([paymentStatus])
+  @@index([followUpSentAt])
 }

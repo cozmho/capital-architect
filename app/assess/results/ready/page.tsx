@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import DownloadReportButton from "@/app/_components/DownloadReportButton";
@@ -9,18 +12,51 @@ const strategyCallUrl =
   process.env.NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL ||
   `mailto:${contactEmail}?subject=Capital%20Architect%20Strategy%20Call`;
 
+interface VerdicData {
+  score: number;
+  tier: string;
+  fullName: string;
+  leadId?: string;
+  email?: string;
+}
+
 export default function ReadyPage() {
+  const [data] = useState<VerdicData | null>(() => {
+    if (typeof window === "undefined") return null;
+    const stored = sessionStorage.getItem("verdicResult");
+    return stored ? JSON.parse(stored) : null;
+  });
+
+  const firstName = data?.fullName?.split(" ")[0];
+
   return (
     <main className="min-h-screen bg-[#060A14] px-6 py-16 text-zinc-100">
       <div id="report-pdf" className="mx-auto max-w-3xl text-center">
-        <div className="mb-8 flex justify-center">
-          <div className="rounded-full bg-[#C8A84B]/20 p-6">
-            <CheckCircle2 className="h-16 w-16 text-[#C8A84B]" />
+        {/* Verdic Score Card (shown when score data is available) */}
+        {data?.score != null && (
+          <div className="results-score-card tier-a" style={{ marginBottom: 32 }}>
+            <div className="score-eyebrow">YOUR VERDIC™ SCORE</div>
+            <div className="score-display">
+              <span className="score-number tier-a-color">{data.score}</span>
+              <span className="score-out-of">/ 100</span>
+            </div>
+            <div className="score-tier-badge tier-a-badge">
+              <span className="tier-letter">A</span>
+              Capital Ready
+            </div>
           </div>
-        </div>
+        )}
+
+        {!data?.score && (
+          <div className="mb-8 flex justify-center">
+            <div className="rounded-full bg-[#C8A84B]/20 p-6">
+              <CheckCircle2 className="h-16 w-16 text-[#C8A84B]" />
+            </div>
+          </div>
+        )}
 
         <h1 className="font-serif text-5xl font-bold text-[#C8A84B] md:text-6xl">
-          You&apos;re Fundable.
+          {firstName ? `${firstName}, you're fundable.` : "You're Fundable."}
         </h1>
         <p className="mt-4 text-2xl font-light text-white">Let&apos;s move.</p>
 

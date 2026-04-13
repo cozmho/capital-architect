@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import DownloadReportButton from "@/app/_components/DownloadReportButton";
@@ -9,18 +12,51 @@ const repairKitUrl =
   process.env.NEXT_PUBLIC_REPAIR_KIT_URL ||
   `mailto:${contactEmail}?subject=Capital%20Architect%20Repair%20Kit`;
 
+interface VerdicData {
+  score: number;
+  tier: string;
+  fullName: string;
+  leadId?: string;
+  email?: string;
+}
+
 export default function RepairPage() {
+  const [data] = useState<VerdicData | null>(() => {
+    if (typeof window === "undefined") return null;
+    const stored = sessionStorage.getItem("verdicResult");
+    return stored ? JSON.parse(stored) : null;
+  });
+
+  const firstName = data?.fullName?.split(" ")[0];
+
   return (
     <main className="min-h-screen bg-[#060A14] px-6 py-16 text-zinc-100">
       <div id="report-pdf" className="mx-auto max-w-3xl text-center">
-        <div className="mb-8 flex justify-center">
-          <div className="rounded-full bg-red-500/20 p-6">
-            <AlertCircle className="h-16 w-16 text-red-400" />
+        {/* Verdic Score Card */}
+        {data?.score != null && (
+          <div className="results-score-card tier-c" style={{ marginBottom: 32 }}>
+            <div className="score-eyebrow">YOUR VERDIC™ SCORE</div>
+            <div className="score-display">
+              <span className="score-number tier-c-color">{data.score}</span>
+              <span className="score-out-of">/ 100</span>
+            </div>
+            <div className="score-tier-badge tier-c-badge">
+              <span className="tier-letter">C</span>
+              Rebuild First
+            </div>
           </div>
-        </div>
+        )}
+
+        {!data?.score && (
+          <div className="mb-8 flex justify-center">
+            <div className="rounded-full bg-red-500/20 p-6">
+              <AlertCircle className="h-16 w-16 text-red-400" />
+            </div>
+          </div>
+        )}
 
         <h1 className="font-serif text-5xl font-bold text-white md:text-6xl">
-          Not Yet
+          {firstName ? `${firstName}, not yet` : "Not Yet"}
         </h1>
         <p className="mt-4 text-2xl font-light text-red-400">— but fixable.</p>
 
@@ -54,7 +90,7 @@ export default function RepairPage() {
               "Proven disputation letter templates",
               "Timeline and milestones for a 90-day cleanup",
               "When to use a credit repair agency vs. DIY",
-              "Re-assessment checklist for when you&apos;re ready",
+              "Re-assessment checklist for when you're ready",
             ].map((item) => (
               <div key={item} className="flex items-start gap-3">
                 <div className="mt-1 h-2 w-2 rounded-full bg-red-400" />
