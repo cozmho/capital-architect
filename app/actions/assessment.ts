@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getPrismaClient } from "@/lib/prisma";
 import { calculateFundabilityScore } from "./scoring";
+import { generateLeadStrategy } from "@/lib/lead-strategy";
 
 const prisma = getPrismaClient();
 
@@ -21,6 +22,7 @@ type AssessmentResult = {
   tier: "A" | "B" | "C";
   score: number;
   leadId: string;
+  strategy?: string;
 };
 
 export async function processAssessment(input: AssessmentInput): Promise<AssessmentResult> {
@@ -42,10 +44,25 @@ export async function processAssessment(input: AssessmentInput): Promise<Assessm
       tier = "C";
     }
 
+    // Generate AI Strategy Feedback
+    const strategyResult = await generateLeadStrategy({
+      id: "temp",
+      businessName: input.name,
+      ownerName: input.name,
+      email: input.email,
+      phone: input.phone,
+      tier,
+      metro2ErrorCount: input.metro2ErrorCount,
+      recentInquiries: input.recentInquiries,
+      entityType: input.hasEntity ? input.entityType : "No Entity",
+      fundabilityScore: score,
+    }, process.env.GEMINI_API_KEY);
+
     // Save to database
     const lead = await prisma.lead.create({
       data: {
         businessName: input.name,
+        ownerName: input.name,
         email: input.email,
         phone: input.phone,
         entityType: input.hasEntity ? input.entityType : "No Entity",
@@ -55,6 +72,7 @@ export async function processAssessment(input: AssessmentInput): Promise<Assessm
         tier,
         status: "ASSESSMENT_COMPLETE",
         source: "public_assessment",
+        notes: strategyResult.strategy,
       },
     });
 
@@ -69,6 +87,7 @@ export async function processAssessment(input: AssessmentInput): Promise<Assessm
       tier,
       score,
       leadId: lead.id,
+      strategy: strategyResult.strategy,
     };
   } catch (error) {
     console.error("Assessment processing error:", error);

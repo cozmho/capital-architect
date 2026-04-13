@@ -30,9 +30,20 @@ Treat it as confidential operational guidance for the repository and keep sensit
 - At the end of each session, update `memory.md` with the day’s key decisions, strategic patterns, and pending timelines in sanitized form.
 - Keep the logging prompt concise and consistent: Update memory.md with today's key decisions, strategic patterns, and pending timelines.
 
+## B.L.A.S.T. Framework Adoption
+
+This project follows the **B.L.A.S.T.** (Blueprint, Linkages, Architecture, Stylize, Trigger) framework for development and architectural integrity.
+
+- **B - Blueprint:** Refer to `blueprint.md` for the core purpose and features of the project. Always consult this file before proposing new features.
+- **L - Linkages:** Understand how components (Clerk, Prisma, Supabase, Resend, Stripe) are interconnected as defined in the `blueprint.md`.
+- **A - Architecture:** Adhere to the established Next.js 16 App Router folder structure and logic. Maintain clear separation between server actions, API routes, and shared libraries.
+- **S - Stylize:** Follow the premium dark-mode aesthetic using Tailwind CSS v4 and Lucide React as established in existing UI components.
+- **T - Trigger:** Use the verified commands (`npm run dev`, `npm run lint`, etc.) to trigger development, validation, and deployment cycles.
+
 ## Repo Alignment
 
 - Follow the active repository guidance in `AGENTS.md`.
 - Preserve the existing Next.js 16, Clerk, Prisma, and Tailwind conventions already established in the codebase.
+- Maintain `memory.md` as the source of truth for session continuity.
 
 @AGENTS.md

@@ -15,47 +15,49 @@ type ScoringInput = {
 };
 
 export async function calculateFundabilityScore(input: ScoringInput): Promise<number> {
-  let score = 70; // Start with a base neutral score
+  let score = 100; // Start with a base perfect score as per marketing "starts at 100"
 
-  // 1. Credit Quality (FICO) - High Impact
+  // 1. Credit Quality (FICO) - High Impact (if provided)
   if (input.ficoScore) {
     const fico = Math.max(300, Math.min(850, input.ficoScore));
-    if (fico >= 740) score += 20;
-    else if (fico >= 700) score += 10;
-    else if (fico < 640) score -= 15;
-    else if (fico < 580) score -= 30;
+    if (fico >= 740) score += 5; // Small bonus for excellent credit
+    else if (fico < 700) score -= 10;
+    else if (fico < 640) score -= 20;
+    else if (fico < 580) score -= 40;
   }
 
   // 2. Metro 2 Compliance Errors - Critical Impact
+  // Each error is a significant deduction
   if (input.metro2ErrorCount) {
     const errors = Math.max(0, input.metro2ErrorCount);
-    score -= errors * 12; // 12 pts per error
+    score -= errors * 10; // 10 pts per error group/count
   }
 
   // 3. Underwriting (Inquiries) - Medium Impact
   if (input.recentInquiries !== null && input.recentInquiries !== undefined) {
     const inquiries = Math.max(0, input.recentInquiries);
-    if (inquiries > 6) score -= 25;
-    else if (inquiries > 3) score -= 10;
+    if (inquiries >= 5) score -= 20;
+    else if (inquiries >= 3) score -= 10;
+    else if (inquiries >= 1) score -= 5;
   }
 
-  // 4. Revenue & Stability - Positive Impact
+  // 4. Revenue & Stability - Positive Impact (if provided)
   if (input.monthlyRevenue) {
     const revenue = Math.max(0, input.monthlyRevenue);
-    if (revenue >= 50000) score += 15;
+    if (revenue >= 50000) score += 10;
     else if (revenue >= 10000) score += 5;
   }
 
   if (input.timeInBusiness) {
     const months = Math.max(0, input.timeInBusiness);
     if (months >= 24) score += 10;
-    else if (months >= 6) score += 5;
+    else if (months >= 12) score += 5;
   }
 
   // 5. Entity Structure - Institutional Preference
-  if (input.entityType === "LLC") score += 5;
+  if (input.entityType === "LLC" || input.entityType === "Corporation") score += 5;
   else if (input.entityType === "Private Trust") score += 10;
-  else if (input.entityType === "Sole Prop") score -= 5;
+  else if (!input.entityType || input.entityType === "Sole Prop" || input.entityType === "No Entity") score -= 10;
 
   // Final Clamp
   return Math.max(0, Math.min(100, score));
