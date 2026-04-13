@@ -14,12 +14,12 @@ export default async function AdminDashboardPage({ searchParams }: {
   try {
     if (process.env.DATABASE_URL) {
       // Fetch leads with pagination
-      leads = await prisma.capitalLead.findMany({
+      leads = await prisma.lead.findMany({
         orderBy: { createdAt: 'desc' },
         skip: (currentPage - 1) * pageSize,
         take: pageSize,
       });
-      totalLeadsCount = await prisma.capitalLead.count();
+      totalLeadsCount = await prisma.lead.count();
       dbConnected = true;
     }
   } catch (error) {
@@ -28,8 +28,8 @@ export default async function AdminDashboardPage({ searchParams }: {
 
   const [tierA, paidLeads] = dbConnected
     ? await Promise.all([
-        prisma.capitalLead.count({ where: { tier: "A" } }),
-        prisma.capitalLead.count({ where: { hasPaid: true } }),
+        prisma.lead.count({ where: { tier: "A" } }),
+        prisma.lead.count({ where: { paymentStatus: "paid" } }),
       ])
     : [0, 0];
   const totalPages = Math.ceil(totalLeadsCount / pageSize);
@@ -115,8 +115,8 @@ export default async function AdminDashboardPage({ searchParams }: {
                           {lead.createdAt.toLocaleDateString()}
                         </td>
                         <td style={{ padding: "16px 28px" }}>
-                          <strong style={{ display: "block", marginBottom: "4px", color: "var(--gold)" }}>{lead.fullName}</strong>
-                          <span style={{ fontSize: "13px", color: "var(--muted)" }}>{lead.email}</span>
+                          <strong style={{ display: "block", marginBottom: "4px", color: "var(--gold)" }}>{lead.ownerName || "Unknown"}</strong>
+                          <span style={{ fontSize: "13px", color: "var(--muted)" }}>{lead.email || "No email"}</span>
                           <br />
                           {lead.phone && <span style={{ fontSize: "13px", color: "var(--muted)" }}>{lead.phone}</span>}
                         </td>
@@ -128,7 +128,7 @@ export default async function AdminDashboardPage({ searchParams }: {
                             <span className={`compliance-score-pill ${lead.tier === "A" ? "pass" : lead.tier === "B" ? "warning" : "fail"}`}>
                               Tier {lead.tier}
                             </span>
-                            <strong>{lead.score}</strong>
+                            <strong>{lead.fundabilityScore || "0"}</strong>
                           </div>
                           {lead.hasMetro2Errors && (
                             <span style={{ display: "inline-block", marginTop: "8px", fontSize: "11px", color: "var(--red)", background: "rgba(226,75,74,0.1)", padding: "2px 6px", borderRadius: "4px" }}>
@@ -137,7 +137,7 @@ export default async function AdminDashboardPage({ searchParams }: {
                           )}
                         </td>
                         <td style={{ padding: "16px 28px" }}>
-                          {lead.hasPaid ? (
+                          {lead.paymentStatus === "paid" ? (
                             <span style={{ color: "var(--green)" }}>Yes</span>
                           ) : (
                             <span style={{ color: "var(--muted)" }}>No</span>
