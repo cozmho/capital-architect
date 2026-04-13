@@ -1805,13 +1805,125 @@ img { max-width: 100%; }
   overflow-y: auto;
 }
 
-.link-gold {
-  color: var(--gold);
-  font-size: 14px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: color var(--transition);
+/* ========================================================================
+   DISCLOSURE MODAL & CHECKBOX
+   ======================================================================== */
+.disclosure-overlay {
+  position: fixed; inset: 0;
+  background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; z-index: 1000;
 }
-.link-gold:hover { color: var(--gold-lt); }
+.disclosure-card {
+  width: 100%; max-width: 560px;
+  background: var(--bg2); border: 1px solid var(--gold-bdr);
+  border-radius: var(--radius-lg); padding: 32px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5), var(--shadow-gold);
+}
+.disclosure-card h2 {
+  font-family: var(--serif); font-size: 24px; font-weight: 400;
+  margin-bottom: 20px; color: var(--gold);
+}
+.disclosure-scroll {
+  max-height: 240px; overflow-y: auto;
+  padding: 20px; background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 24px;
+}
+.disclosure-scroll p {
+  font-size: 13px; color: var(--muted); font-weight: 300;
+  line-height: 1.6; margin-bottom: 16px;
+}
+.disclosure-scroll p:last-child { margin-bottom: 0; }
+.disclosure-scroll strong { color: var(--text); font-weight: 500; }
+
+.disclosure-consent { margin-bottom: 24px; }
+.checkbox-container {
+  display: flex; gap: 12px; align-items: flex-start;
+  cursor: pointer; user-select: none;
+}
+.checkbox-container input {
+  width: 18px; height: 18px; margin-top: 2px;
+  accent-color: var(--gold);
+}
+.checkbox-label {
+  font-size: 14px; color: var(--text); font-weight: 400; line-height: 1.4;
+}
+
+.disclosure-actions {
+  display: flex; gap: 16px; justify-content: flex-end;
+}
+.disclosure-actions .btn-ghost { padding: 12px 20px; }
+.disclosure-actions .btn-primary { padding: 12px 24px; }
+
+/* ========================================================================
+   MCP-20 COMPLIANCE AUDIT
+   ======================================================================== */
+.dash-card-sub {
+  font-size: 13px; color: var(--muted); margin-top: 4px; font-weight: 300;
+}
+.compliance-score-pill {
+  padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;
+}
+.compliance-score-pill.pass { background: rgba(125,196,74,0.1); color: var(--green); border: 1px solid rgba(125,196,74,0.2); }
+.compliance-score-pill.warning { background: rgba(200,168,75,0.1); color: var(--gold); border: 1px solid var(--gold-bdr); }
+.compliance-score-pill.fail { background: rgba(226,75,74,0.1); color: var(--red); border: 1px solid rgba(226,75,74,0.2); }
+
+.compliance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.compliance-item {
+  display: flex; gap: 14px; padding: 16px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); transition: border-color var(--transition);
+}
+.compliance-item:hover { border-color: var(--border-md); }
+.compliance-item.pass { border-left: 3px solid var(--green); }
+.compliance-item.fail { border-left: 3px solid var(--red); }
+.compliance-item.pending { border-left: 3px solid var(--muted); }
+
+.compliance-item-icon {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
+}
+.pass .compliance-item-icon { background: rgba(125,196,74,0.15); color: var(--green); }
+.fail .compliance-item-icon { background: rgba(226,75,74,0.15); color: var(--red); }
+.pending .compliance-item-icon { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+.compliance-item-content { display: flex; flex-direction: column; gap: 2px; }
+.compliance-item-content strong { font-size: 14px; font-weight: 500; color: var(--text); }
+.compliance-item-content span { font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.4; }
+
+.dot-pending { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); opacity: 0.5; }
+
+@media (max-width: 600px) {
+  .compliance-grid { grid-template-columns: 1fr; }
+}
+
+.roadmap-overview {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.roadmap-stat {
+  display: flex; align-items: baseline; gap: 10px;
+  background: var(--bg3); padding: 20px; border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.roadmap-val {
+  font-family: var(--serif); font-size: 32px; color: var(--gold);
+}
+.roadmap-lab {
+  font-size: 13px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.05em; font-weight: 500;
+}
+.dash-sub-text {
+  font-size: 14px; color: var(--muted); line-height: 1.6; font-weight: 300;
+}
+.dash-sub-text strong { color: var(--text); font-weight: 500; }
+
+.dash-action.disabled {
+  opacity: 0.5; filter: grayscale(1); cursor: not-allowed;
+}
+.dash-action.disabled:hover { border-color: var(--border); background: var(--bg3); }

@@ -14,6 +14,8 @@ interface VerdicData {
 
 export default function ReadyPage() {
   const [data, setData] = useState<VerdicData | null>(null);
+  const [showDisclosure, setShowDisclosure] = useState(false);
+  const [hasConsented, setHasConsented] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("verdicResult");
@@ -118,24 +120,22 @@ export default function ReadyPage() {
         {/* CTAs */}
         <div className="results-ctas">
           {data?.hasMetro2Errors && (
-            <a href="/dashboard/client/letter-preview" className="btn-outline-gold results-cta">
-              Download Free Dispute Letter
+            <a href="/dashboard" className="btn-outline-gold results-cta">
+              View Dispute Templates
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
               </svg>
             </a>
           )}
-          <a
-            href={STRIPE_URL}
+          <button
+            onClick={() => setShowDisclosure(true)}
             className="btn-primary results-cta"
-            target="_blank"
-            rel="noopener noreferrer"
           >
             Unlock Your Funding Roadmap — $350
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
-          </a>
+          </button>
         </div>
 
         <p className="results-fine">
@@ -143,6 +143,51 @@ export default function ReadyPage() {
           lender-ready positioning, and full dashboard access.
         </p>
       </div>
+
+      {/* CROA Disclosure Modal */}
+      {showDisclosure && (
+        <div className="disclosure-overlay">
+          <div className="disclosure-card">
+            <h2>Legal Disclosure & Terms</h2>
+            <div className="disclosure-scroll">
+              <p><strong>Consumer Disclosure:</strong> You have the right to dispute inaccurate information in your credit report by contacting the credit bureau directly. You are not required to purchase any credit repair services or software to execute these rights. Information on how to do this for free is provided at consumerfinance.gov.</p>
+              
+              <p><strong>Engagement:</strong> By proceeding, you are purchasing a digital educational product (The Funding Roadmap) and a one-time license for the Capital Architect MCP Dashboard. This is not a "guaranteed funding" service or a credit repair service as defined by CROA.</p>
+              
+              <p><strong>Terms:</strong> Your $350 payment is for immediate access to these digital assets. No recurring fees will be charged. You have a 3-day right to cancel this agreement following purchase for a full refund, provided no digital assets have been downloaded.</p>
+            </div>
+            
+            <div className="disclosure-consent">
+              <label className="checkbox-container">
+                <input 
+                  type="checkbox" 
+                  checked={hasConsented} 
+                  onChange={(e) => setHasConsented(e.target.checked)} 
+                />
+                <span className="checkbox-label">I have read the disclosure and agree to the Terms of Service.</span>
+              </label>
+            </div>
+
+            <div className="disclosure-actions">
+              <button 
+                className="btn-ghost"
+                onClick={() => setShowDisclosure(false)}
+              >
+                Go Back
+              </button>
+              <a
+                href={hasConsented ? STRIPE_URL : "#"}
+                className={`btn-primary ${!hasConsented ? 'btn-disabled' : ''}`}
+                target={hasConsented ? "_blank" : undefined}
+                rel="noopener noreferrer"
+              >
+                Proceed to Payment
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

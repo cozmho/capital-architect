@@ -97,6 +97,7 @@ export interface VerdicResult {
   route: "ready" | "prep" | "repair" | "prelaunch";
   hasMetro2Errors: boolean;
   path: "business" | "pre-business";
+  complianceItems?: { id: string; label: string; status: "pass" | "fail" | "pending"; description: string }[];
 }
 
 // ============================================================================
@@ -271,9 +272,18 @@ function scoreBusinessPath(data: BusinessFormData): VerdicResult {
     tier = "C"; route = "repair";
   }
 
+  // MCP-20 Compliance Checks
+  const complianceItems: { id: string; label: string; status: "pass" | "fail" | "pending"; description: string }[] = [
+    { id: "ein", label: "Tax ID (EIN)", status: data.hasEIN === "yes" ? "pass" : "fail", description: "Business EIN registration" },
+    { id: "bank", label: "Business Bank", status: data.hasBusinessBank === "yes" ? "pass" : "fail", description: "Dedicated commercial banking" },
+    { id: "address", label: "Business Address", status: data.addressType === "commercial" || data.addressType === "virtual-office" ? "pass" : "fail", description: "Professional address requirement" },
+    { id: "duns", label: "D-U-N-S Number", status: data.hasDUNS === "yes" ? "pass" : "fail", description: "Registration with D&B" },
+    { id: "taxes", label: "Business Taxes", status: data.hasFiledBusinessTaxes === "yes" ? "pass" : "fail", description: "Tax compliance standing" },
+  ];
+
   console.log(`=== VERDIC RESULT [BUSINESS]: Score=${score}, Tier=${tier} ===`);
 
-  return { score, tier, route, hasMetro2Errors, path: "business" };
+  return { score, tier, route, hasMetro2Errors, path: "business", complianceItems };
 }
 
 // ============================================================================
@@ -361,5 +371,5 @@ function scorePreBusinessPath(data: PreBusinessFormData): VerdicResult {
 
   console.log(`=== VERDIC RESULT [PRE-BUSINESS]: Score=${score}, Tier=${tier} ===`);
 
-  return { score, tier, route, hasMetro2Errors, path: "pre-business" };
+  return { score, tier, route, hasMetro2Errors, path: "pre-business", complianceItems: [] };
 }
