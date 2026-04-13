@@ -115,7 +115,7 @@ export async function calculateVerdicScore(
 
   try {
     if (process.env.DATABASE_URL) {
-      await prisma.lead.create({
+      await prisma.capitalLead.create({
         data: {
           path: formData.path,
           fullName: formData.fullName,

@@ -1,14 +1,15 @@
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
+import { unstable_noStore as noStore } from "next/cache";
 
 export default async function AdminDashboardPage() {
+  noStore();
   let leads: any[] = [];
   let dbConnected = false;
 
   try {
     if (process.env.DATABASE_URL) {
       // Fetch newest leads first
-      leads = await prisma.lead.findMany({
+      leads = await prisma.capitalLead.findMany({
         orderBy: { createdAt: 'desc' },
       });
       dbConnected = true;

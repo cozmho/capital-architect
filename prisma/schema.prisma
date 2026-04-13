@@ -7,6 +7,45 @@ datasource db {
 }
 
 model Lead {
+  id                    String    @id
+  businessName          String
+  tier                  String    @default("B")
+  adb                   Int       @default(0)
+  nsfs                  Int       @default(0)
+  status                String    @default("PENDING_DOCS")
+  createdAt             DateTime  @default(now())
+  email                 String?
+  ficoScore             Int?
+  lastContactedAt       DateTime?
+  monthlyRevenue        Int?
+  notes                 String?
+  ownerName             String?
+  phone                 String?
+  source                String    @default("website")
+  tags                  String[]  @default([])
+  timeInBusiness        Int?
+  updatedAt             DateTime  @default(now())
+  chase524Count         Int?
+  complianceStatus      String?
+  entityType            String?
+  fundabilityScore      Int?
+  hasIdentityTheftBlock Boolean?
+  metro2ErrorCount      Int?
+  recentInquiries       Int?
+
+  @@index([email])
+  @@index([status])
+  @@index([tier])
+}
+
+model User {
+  id        String   @id
+  email     String   @unique
+  role      String   @default("SETTER")
+  createdAt DateTime @default(now())
+}
+
+model CapitalLead {
   id              String   @id @default(uuid())
   createdAt       DateTime @default(now())
   path            String
@@ -25,4 +64,6 @@ model Lead {
   
   // Storage for the exact intake answers
   rawInput        Json?
+
+  @@map("capital_leads")
 }
