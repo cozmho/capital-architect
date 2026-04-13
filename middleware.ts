@@ -28,7 +28,7 @@ const godModeUserIds = parseGodModeUserIds();
 type DashboardRole = 'admin' | 'closer' | 'setter';
 
 const roleHome: Record<DashboardRole, string> = {
-  admin: '/dashboard/god-mode',
+  admin: '/dashboard/admin',
   closer: '/dashboard/closer',
   setter: '/dashboard/setter',
 };
