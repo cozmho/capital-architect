@@ -35,11 +35,14 @@ export default function RootLayout({
           colorBackground: "#0C1220",
           colorInputBackground: "#111827",
           colorInputText: "#F0EDE6",
+          colorText: "#F0EDE6",
+          colorTextOnPrimaryBackground: "#020617",
           borderRadius: "8px",
           fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
         },
       }}
     >
+
       <html lang="en" className={`${dmSerif.variable} ${dmSans.variable}`}>
         <body>{children}</body>
       </html>

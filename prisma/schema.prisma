@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Lead {
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now())
+  path            String
+  fullName        String
+  email           String
+  phone           String?
+  businessName    String?
+  
+  // Verdic Score Details
+  score           Int
+  tier            String
+  hasMetro2Errors Boolean  @default(false)
+
+  // Status
+  hasPaid         Boolean  @default(false)
+  
+  // Storage for the exact intake answers
+  rawInput        Json?
+}

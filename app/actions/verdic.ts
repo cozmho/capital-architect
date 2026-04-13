@@ -6,11 +6,11 @@
 // This file runs EXCLUSIVELY on the server. The scoring weights, tier
 // thresholds, and underwriting logic NEVER ship to the browser.
 //
-// The client sends form data → the server does the math → the server
-// returns the tier. That's it.
-//
-// TODO: Wire to Supabase to persist prospect data and scores
+// All prospect submissions are immediately saved to the Postgres database.
 // ============================================================================
+
+import { prisma } from "@/lib/prisma";
+
 
 // ---------------------------------------------------------------------------
 // BUSINESS PATH — Full intake
@@ -106,22 +106,37 @@ export interface VerdicResult {
 export async function calculateVerdicScore(
   formData: IntakeFormData
 ): Promise<VerdicResult> {
-  // -----------------------------------------------------------------
-  // Log prospect data
-  // TODO: wire to Supabase — INSERT into prospects table
-  // -----------------------------------------------------------------
-  console.log("=== NEW INTAKE SUBMISSION ===");
-  console.log("Path:", formData.path);
-  console.log("Name:", formData.fullName);
-  console.log("Email:", formData.email);
-  console.log("Timestamp:", new Date().toISOString());
-  console.log("Full data:", JSON.stringify(formData, null, 2));
+  const result = formData.path === "business" 
+    ? scoreBusinessPath(formData) 
+    : scorePreBusinessPath(formData);
 
-  if (formData.path === "business") {
-    return scoreBusinessPath(formData);
-  } else {
-    return scorePreBusinessPath(formData);
+  console.log("=== NEW INTAKE SUBMISSION ===");
+  console.log(`Path: ${formData.path} | Name: ${formData.fullName} | Score: ${result.score} (Tier ${result.tier})`);
+
+  try {
+    if (process.env.DATABASE_URL) {
+      await prisma.lead.create({
+        data: {
+          path: formData.path,
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone || null,
+          businessName: (formData as BusinessFormData).businessName || null,
+          score: result.score,
+          tier: result.tier,
+          hasMetro2Errors: result.hasMetro2Errors,
+          rawInput: formData as any,
+        }
+      });
+      console.log("✅ Lead successfully saved to database.");
+    } else {
+      console.warn("⚠️ DATABASE_URL not set. Lead was NOT saved to the database.");
+    }
+  } catch (error) {
+    console.error("❌ Database Error: Failed to save lead.", error);
   }
+
+  return result;
 }
 
 // ============================================================================
