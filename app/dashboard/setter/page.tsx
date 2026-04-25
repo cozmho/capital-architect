@@ -1,6 +1,7 @@
 import { Activity, ClipboardList, FileClock, FolderKanban, Users } from "lucide-react";
 import { getPrismaClient } from "@/lib/prisma";
 import { StatusToggle } from "./_components/StatusToggle";
+import { StatCard, PageHeader } from "../_components";
 
 export const dynamic = "force-dynamic";
 
@@ -79,37 +80,21 @@ export default async function SetterDashboardPage() {
   return (
     <main className="min-h-screen bg-linear-to-br from-zinc-950 via-zinc-900 to-black text-zinc-100">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-10 lg:px-10">
-        <header className="rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-6 backdrop-blur-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Capital Architect</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">Setter Dashboard</h1>
-              <p className="mt-2 text-sm text-zinc-400">Qualify Tier B opportunities and clear document bottlenecks fast.</p>
-            </div>
+        <PageHeader
+          title="Setter Dashboard"
+          description="Qualify Tier B opportunities and clear document bottlenecks fast."
+          actions={
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-zinc-300">
               <Activity className="h-4 w-4 text-cyan-300" />
               Outreach active
             </div>
-          </div>
-        </header>
+          }
+        />
 
         <div className="grid gap-5 md:grid-cols-3">
-          {setterStats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <article
-                key={stat.title}
-                className={`rounded-2xl border border-zinc-800/80 bg-linear-to-br ${stat.tone} p-5 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]`}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-zinc-300">{stat.title}</p>
-                  <Icon className="h-5 w-5 text-zinc-200" />
-                </div>
-                <p className="mt-4 text-3xl font-semibold tracking-tight text-white">{stat.value}</p>
-                <p className="mt-1 text-sm text-zinc-400">{stat.delta}</p>
-              </article>
-            );
-          })}
+          {setterStats.map((stat) => (
+            <StatCard key={stat.title} {...stat} />
+          ))}
         </div>
 
         <section className="rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-6">
