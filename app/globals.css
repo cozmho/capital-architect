@@ -579,28 +579,33 @@ nav {
   content: '';
   position: absolute;
   top: 28px;
-  left: calc(16.66% + 12px);
-  right: calc(16.66% + 12px);
+  /* span from center of first column to center of last column */
+  left: calc(100% / 6);
+  right: calc(100% / 6);
   height: 1px;
-  background: linear-gradient(to right, var(--gold-bdr), var(--gold-bdr));
+  background: var(--gold-bdr);
+  pointer-events: none;
 }
 .step {
   padding: 0 32px;
-  border-right: 1px solid var(--border);
+  text-align: center;
+  position: relative;
 }
-.step:last-child { border-right: none; }
 .step-number {
   width: 56px; height: 56px;
-  background: var(--gold-bg);
+  /* solid bg so the connector line is hidden behind the circle */
+  background: var(--bg);
   border: 1px solid var(--gold-bdr);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--serif);
   font-size: 22px;
   color: var(--gold);
-  margin-bottom: 28px;
+  margin: 0 auto 28px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  /* inner gold tint over the solid bg */
+  box-shadow: inset 0 0 0 100px var(--gold-bg);
 }
 .step h3 {
   font-family: var(--serif);
@@ -613,6 +618,7 @@ nav {
   color: var(--muted);
   line-height: 1.65;
   font-weight: 300;
+  text-align: left;
 }
 
 /* ── FOOTER ── */
@@ -693,7 +699,7 @@ footer {
   .verdic-grid { grid-template-columns: 1fr; gap: 48px; }
   .process-steps { grid-template-columns: 1fr; gap: 48px; }
   .process-steps::before { display: none; }
-  .step { border-right: none; padding: 0; }
+  .step { padding: 0; text-align: left; }
   .results-grid { grid-template-columns: repeat(2, 1fr); }
   .magnet-inner { grid-template-columns: 1fr; gap: 48px; }
   .footer-top { grid-template-columns: 1fr 1fr; gap: 40px; }
