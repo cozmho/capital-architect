@@ -1,10 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { getPrismaClient } from "@/lib/prisma";
 import { unstable_noStore as noStore } from "next/cache";
 
 export default async function AdminDashboardPage({ searchParams }: {
   searchParams?: { page?: string; pageSize?: string };
 }) {
   noStore();
+  const prisma = getPrismaClient();
   let leads: any[] = [];
   let dbConnected = false;
   let totalLeadsCount = 0;
