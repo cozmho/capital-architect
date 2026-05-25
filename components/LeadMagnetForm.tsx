@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { sendBlueprintEmail } from "@/app/actions/email";
 
 interface FormErrors {
   name?: string;
   email?: string;
+  form?: string;
 }
 
 export default function LeadMagnetForm() {
@@ -37,16 +39,23 @@ export default function LeadMagnetForm() {
     if (!validate()) return;
 
     setLoading(true);
+    setErrors({});
 
-    // TODO: wire to /api/blueprint-signup
-    const formData = { name, email, business };
-    console.log("Lead magnet form submitted:", formData);
+    try {
+      const result = await sendBlueprintEmail(email, name);
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+      if (!result.success) {
+        setErrors({ form: result.error || "Failed to send blueprint. Please try again." });
+        setLoading(false);
+        return;
+      }
 
-    setLoading(false);
-    setSuccess(true);
+      setLoading(false);
+      setSuccess(true);
+    } catch {
+      setErrors({ form: "Something went wrong. Please try again." });
+      setLoading(false);
+    }
   };
 
   if (success) {
@@ -123,6 +132,7 @@ export default function LeadMagnetForm() {
         <button type="submit" className="btn-primary" style={{ width: "100%", justifyContent: "center" }} disabled={loading}>
           {loading ? "Sending..." : "Send Me the Blueprint"}
         </button>
+        {errors.form && <p className="form-error" style={{ textAlign: "center", marginTop: "12px" }}>{errors.form}</p>}
         <p className="form-fine">
           We don&apos;t sell lists. We&apos;re not built that way.
         </p>

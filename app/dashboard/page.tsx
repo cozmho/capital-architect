@@ -2,7 +2,10 @@ import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import ComplianceAudit from "@/components/ComplianceAudit";
 
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/00wdR8h1F0rT8wCdvLaVa00";
+const STRIPE_PAYMENT_LINK =
+  process.env.NEXT_PUBLIC_TIER_B_STRIPE_URL ||
+  process.env.NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL ||
+  "/membership";
 
 export default async function DashboardPage() {
   const user = await currentUser();
