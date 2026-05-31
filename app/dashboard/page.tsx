@@ -125,12 +125,12 @@ export default async function DashboardPage() {
                 </svg>
                 <span>FCRA §611 Dispute Letter</span>
               </Link>
-              <div className="dash-action disabled">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--muted)" strokeWidth="1.5">
+              <Link href="/dashboard/metro2-compliance" className="dash-action">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--gold)" strokeWidth="1.5">
                   <path d="M12 1v22M17 5l-5-5-5 5M17 19l-5 5-5-5" />
                 </svg>
-                <span>Metro 2 Compliance Template (Coming Soon)</span>
-              </div>
+                <span>Metro 2 Compliance Template</span>
+              </Link>
               <Link href="/contact" className="dash-action">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--gold)" strokeWidth="1.5">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
