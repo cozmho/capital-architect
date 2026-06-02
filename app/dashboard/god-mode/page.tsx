@@ -1,7 +1,7 @@
 import { Activity, BadgeDollarSign, Crown, Key, TrendingUp, Users } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { getPrismaClient } from "@/lib/prisma";
-import { StatCard, PageHeader, DataTable, StatusBadge, tierToVariant } from "../_components";
+import { StatCard, PageHeader, DataTable, StatusBadge } from "../_components";
 import type { Column } from "../_components";
 import { TierOverride } from "./_components/TierOverride";
 import { StatusToggle } from "../setter/_components/StatusToggle";

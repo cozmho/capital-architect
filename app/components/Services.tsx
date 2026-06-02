@@ -9,7 +9,7 @@ export default function Services() {
         <div className="card">
           <div className="card-badge">Start Here · $497</div>
           <h3>Fundability Audit</h3>
-          <p>Not sure if you're ready for capital? Your Verdic™ score tells you exactly where you stand — Metro 2 errors, entity gaps, inquiry damage, and everything lenders actually look at.</p>
+          <p>Not sure if you&apos;re ready for capital? Your Verdic™ score tells you exactly where you stand — Metro 2 errors, entity gaps, inquiry damage, and everything lenders actually look at.</p>
           <a href="/assess" className="card-link">
             Get Your Audit
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -27,7 +27,7 @@ export default function Services() {
         <div className="card">
           <div className="card-badge">Capital Strategy · 10% success fee</div>
           <h3>Funding Strategy</h3>
-          <p>Get a true capital partner. From application positioning through lender routing and term negotiation — we don't take a fee until you're funded. Your win is the only win that counts.</p>
+          <p>Get a true capital partner. From application positioning through lender routing and term negotiation — we don&apos;t take a fee until you&apos;re funded. Your win is the only win that counts.</p>
           <a href="/assess" className="card-link">
             Start the Conversation
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/></svg>

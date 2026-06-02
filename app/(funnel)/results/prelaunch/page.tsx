@@ -17,6 +17,7 @@ export default function PrelaunchPage() {
 
   useEffect(() => {
     const stored = sessionStorage.getItem("verdicResult");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored) setData(JSON.parse(stored));
   }, []);
 

@@ -9,7 +9,7 @@ export default function ProcessSection() {
         <div className="step">
           <div className="step-number">1</div>
           <h3>Assess Your Fundability</h3>
-          <p>Complete the three-step assessment. Verdic™ scores your credit profile exactly as a lender would — Metro 2 errors, inquiry count, entity structure. You'll know your tier in minutes.</p>
+          <p>Complete the three-step assessment. Verdic™ scores your credit profile exactly as a lender would — Metro 2 errors, inquiry count, entity structure. You&apos;ll know your tier in minutes.</p>
         </div>
         <div className="step">
           <div className="step-number">2</div>

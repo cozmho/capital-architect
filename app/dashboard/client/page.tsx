@@ -82,7 +82,7 @@ export default async function ClientDashboardPage() {
             <Gauge className="w-12 h-12 text-cyan-400 mb-4" />
             <h2 className="text-2xl font-semibold text-white mb-2">Fundability Unscored</h2>
             <p className="text-zinc-400 max-w-md mb-6">
-              You haven't completed your full underwriting intake yet. We need this information to calculate your Verdic™ score and assign your funding tier.
+              You haven&apos;t completed your full underwriting intake yet. We need this information to calculate your Verdic™ score and assign your funding tier.
             </p>
             <Link href="/dashboard/client/intake" className="inline-flex items-center gap-2 bg-cyan-500/20 border border-cyan-500/60 text-cyan-100 font-semibold px-6 py-3 rounded-xl hover:bg-cyan-500/30 transition">
               Complete Intake Now <ArrowRight className="w-4 h-4" />

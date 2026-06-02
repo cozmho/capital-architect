@@ -2,6 +2,7 @@ import "dotenv/config";
 import Stripe from "stripe";
 
 const stripe = new Stripe("mk_1TIWyHD8lvIS7A5L7DJ4gUUy", {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   apiVersion: "2026-03-25.dahlia" as any,
 });
 
@@ -10,6 +11,7 @@ async function main() {
     const res = await stripe.balance.retrieve();
     console.log("Success! Balance:", res);
   } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     console.error("Error:", (e as any).message);
   }
 }

@@ -91,7 +91,7 @@ export default function LeadMagnet() {
               </button>
             </form>
           )}
-          <p className="form-note">We don't sell lists. We're not built that way.</p>
+          <p className="form-note">We don&apos;t sell lists. We&apos;re not built that way.</p>
         </div>
       </div>
     </section>

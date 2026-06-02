@@ -2,8 +2,8 @@ export default function PartnerSection() {
   return (
     <section className="partner" id="about">
       <div className="partner-left">
-        <h2>You don't just need a lender.<br /><strong>You need a strategist.</strong></h2>
-        <p>Most business owners walk into the capital markets speaking the wrong language. Lenders aren't your friends — they're decision engines running criteria you've probably never seen. We teach you to speak their language before you ever submit an application.</p>
+        <h2>You don&apos;t just need a lender.<br /><strong>You need a strategist.</strong></h2>
+        <p>Most business owners walk into the capital markets speaking the wrong language. Lenders aren&apos;t your friends — they&apos;re decision engines running criteria you&apos;ve probably never seen. We teach you to speak their language before you ever submit an application.</p>
       </div>
       <div className="partner-right">
         <ul className="feature-list">
@@ -40,7 +40,7 @@ export default function PartnerSection() {
             </div>
             <div className="feature-text">
               <strong>Offense, Defense, or Hold the Line</strong>
-              <span>Capital isn't just money — it's strategy. We teach you when to grow, when to protect, and when to wait.</span>
+              <span>Capital isn&apos;t just money — it&apos;s strategy. We teach you when to grow, when to protect, and when to wait.</span>
             </div>
           </li>
         </ul>

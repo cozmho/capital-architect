@@ -18,6 +18,7 @@ export default function RepairPage() {
   useEffect(() => {
     const stored = sessionStorage.getItem("verdicResult");
     if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setData(JSON.parse(stored));
     }
   }, []);
