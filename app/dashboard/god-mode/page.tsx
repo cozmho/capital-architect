@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { getPrismaClient } from "@/lib/prisma";
 import { StatCard, PageHeader, DataTable, StatusBadge, tierToVariant } from "../_components";
 import type { Column } from "../_components";
+import { TierOverride } from "./_components/TierOverride";
+import { StatusToggle } from "../setter/_components/StatusToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +46,7 @@ const columns: Column<PipelineLead>[] = [
   {
     key: "tier",
     header: "Tier",
-    render: (row) => <StatusBadge label={row.tier} variant={tierToVariant(row.tier)} />,
+    render: (row) => <TierOverride leadId={row.id} currentTier={row.tier} />,
   },
   {
     key: "adb",
@@ -54,7 +56,7 @@ const columns: Column<PipelineLead>[] = [
   {
     key: "stage",
     header: "Stage",
-    render: (row) => <span className="text-zinc-300">{row.status.replaceAll("_", " ")}</span>,
+    render: (row) => <StatusToggle leadId={row.id} currentStatus={row.status} />,
   },
 ];
 

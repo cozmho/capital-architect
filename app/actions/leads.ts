@@ -88,3 +88,29 @@ export async function submitLeadMagnet(input: LeadMagnetInput) {
     return { success: false, error: "Failed to submit request" };
   }
 }
+
+/**
+ * Overrides a lead's tier assignment (A, B, or C).
+ * Used by God Mode admins.
+ */
+export async function updateLeadTier(leadId: string, newTier: string) {
+  const validTiers = ["A", "B", "C"];
+  if (!validTiers.includes(newTier)) {
+    return { success: false, error: `Invalid tier: ${newTier}` };
+  }
+
+  try {
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: { tier: newTier },
+    });
+
+    revalidatePath("/dashboard/god-mode");
+    revalidatePath("/dashboard/setter");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating lead tier:", error);
+    return { success: false, error: "Failed to update tier" };
+  }
+}

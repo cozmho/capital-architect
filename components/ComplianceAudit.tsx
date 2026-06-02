@@ -1,5 +1,7 @@
 "use client";
 
+import { CheckCircle2, XCircle, Circle } from "lucide-react";
+
 interface CheckItem {
   id: string;
   label: string;
@@ -7,46 +9,75 @@ interface CheckItem {
   description: string;
 }
 
+const statusConfig = {
+  pass: {
+    icon: CheckCircle2,
+    iconColor: "text-emerald-400",
+    borderColor: "border-emerald-500/20",
+    bgColor: "bg-emerald-500/5",
+  },
+  fail: {
+    icon: XCircle,
+    iconColor: "text-rose-400",
+    borderColor: "border-rose-500/20",
+    bgColor: "bg-rose-500/5",
+  },
+  pending: {
+    icon: Circle,
+    iconColor: "text-amber-400 animate-pulse",
+    borderColor: "border-amber-500/20",
+    bgColor: "bg-amber-500/5",
+  },
+};
+
 export default function ComplianceAudit({ items }: { items: CheckItem[] }) {
   const passedCount = items.filter(i => i.status === "pass").length;
   const score = Math.round((passedCount / items.length) * 100);
 
+  const scoreVariant =
+    score >= 80
+      ? "border-emerald-600/40 bg-emerald-500/10 text-emerald-300"
+      : score >= 60
+        ? "border-amber-600/40 bg-amber-500/10 text-amber-300"
+        : "border-rose-600/40 bg-rose-500/10 text-rose-300";
+
   return (
-    <div className="dash-card dash-full-width">
-      <div className="dash-card-header">
+    <section className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60 backdrop-blur-sm">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800/60 px-6 py-4">
         <div>
-          <h3>Master Compliance Plan (MCP-20)</h3>
-          <p className="dash-card-sub">Lender Credibility Audit — {score}% Compliant</p>
+          <h2 className="text-lg font-semibold text-white">
+            Master Compliance Plan (MCP-20)
+          </h2>
+          <p className="mt-1 text-sm text-zinc-400">
+            Lender Credibility Audit — {score}% Compliant
+          </p>
         </div>
-        <div className={`compliance-score-pill ${score >= 80 ? 'pass' : score >= 60 ? 'warning' : 'fail'}`}>
+        <span className={`inline-block rounded-lg border px-3 py-1.5 text-sm font-semibold ${scoreVariant}`}>
           {score}%
-        </div>
+        </span>
       </div>
 
-      <div className="compliance-grid">
-        {items.map((item) => (
-          <div key={item.id} className={`compliance-item ${item.status}`}>
-            <div className="compliance-item-icon">
-              {item.status === "pass" ? (
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              ) : item.status === "fail" ? (
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              ) : (
-                <div className="dot-pending" />
-              )}
+      {/* Grid */}
+      <div className="grid gap-3 p-6 sm:grid-cols-2">
+        {items.map((item) => {
+          const config = statusConfig[item.status];
+          const Icon = config.icon;
+
+          return (
+            <div
+              key={item.id}
+              className={`flex items-start gap-3 rounded-xl border p-4 ${config.borderColor} ${config.bgColor}`}
+            >
+              <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${config.iconColor}`} />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-zinc-200">{item.label}</p>
+                <p className="mt-1 text-xs leading-relaxed text-zinc-400">{item.description}</p>
+              </div>
             </div>
-            <div className="compliance-item-content">
-              <strong>{item.label}</strong>
-              <span>{item.description}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-    </div>
+    </section>
   );
 }
