@@ -1,22 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import ConsentGate from "@/app/components/ConsentGate";
 
 const CALENDLY_URL = "https://calendly.com/capitalarchitect-support";
 
 export default function ContactPage() {
-  useEffect(() => {
-    // Load Calendly widget script
-    const script = document.createElement("script");
-    script.src = "https://assets.calendly.com/assets/external/widget.js";
-    script.async = true;
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
   return (
     <div className="contact-container">
       <div className="contact-header">
@@ -66,19 +55,45 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Calendly Embed */}
-      <div className="contact-calendly">
-        <div
-          className="calendly-inline-widget"
-          data-url={`${CALENDLY_URL}?hide_gdpr_banner=1&background_color=0c1220&text_color=f0ede6&primary_color=c8a84b`}
-          style={{ minWidth: "320px", height: "700px", width: "100%" }}
-        />
-      </div>
+      {/* Calendly Embed — gated behind cookie consent (Phase 2) */}
+      <ConsentGate
+        fallback={
+          <div className="contact-calendly contact-calendly-pending">
+            <p className="contact-calendly-message">
+              Calendly is a third-party scheduling tool. It only loads after you
+              accept cookies via the banner below.
+            </p>
+          </div>
+        }
+      >
+        <CalendlyEmbed />
+      </ConsentGate>
 
       {/* Alternate contact */}
       <div className="contact-alt">
         <p>Prefer email? Reach us at <a href="mailto:support@capitalarchitect.tech">support@capitalarchitect.tech</a></p>
       </div>
     </div>
+  );
+}
+
+function CalendlyEmbed() {
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://assets.calendly.com/assets/external/widget.js";
+    script.async = true;
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
+  return (
+    <div
+      className="calendly-inline-widget"
+      data-url={`${CALENDLY_URL}?hide_gdpr_banner=1&background_color=0c1220&text_color=f0ede6&primary_color=c8a84b`}
+      style={{ minWidth: "320px", height: "700px", width: "100%" }}
+    />
   );
 }

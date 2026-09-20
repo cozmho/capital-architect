@@ -1,16 +1,12 @@
-import {
-  SignInButton,
-  SignUpButton,
-  UserButton,
-  Show,
-} from '@clerk/nextjs'
+import { SignInButton, SignUpButton, UserButton, Show } from "@clerk/nextjs";
+import Link from "next/link";
 
 export default function Nav() {
   return (
-    <nav>
+    <nav aria-label="Main navigation">
       <div className="nav-logo">
         <div className="nav-logo-mark">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M3 20l9-16 9 16H3z" stroke="#C8A84B" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
             <path d="M7.5 20l4.5-8 4.5 8" stroke="#C8A84B" strokeWidth="1" fill="none" strokeLinejoin="round" opacity="0.5" />
           </svg>
@@ -22,10 +18,13 @@ export default function Nav() {
         <li><a href="#verdic">How It Works</a></li>
         <li><a href="#results">Results</a></li>
         <li><a href="#resources">Resources</a></li>
+        <li><Link href="/privacy">Privacy</Link></li>
+        <li><Link href="/terms">Terms</Link></li>
+        <li><Link href="/cookies">Cookies</Link></li>
         <Show when="signed-out">
           <li>
             <SignInButton mode="redirect" fallbackRedirectUrl="/">
-              <a href="#" style={{ color: 'var(--muted)', fontSize: '14px' }}>Sign In</a>
+              <a href="#" style={{ color: "var(--muted)", fontSize: "14px" }}>Sign In</a>
             </SignInButton>
           </li>
           <li>
@@ -35,7 +34,7 @@ export default function Nav() {
           </li>
         </Show>
         <Show when="signed-in">
-          <li><a href="/dashboard/client" style={{ color: 'var(--muted)', fontSize: '14px' }}>Dashboard</a></li>
+          <li><a href="/dashboard/client" style={{ color: "var(--muted)", fontSize: "14px" }}>Dashboard</a></li>
           <li><UserButton /></li>
           <li><a href="/assess" className="nav-cta">Get Your Score</a></li>
         </Show>

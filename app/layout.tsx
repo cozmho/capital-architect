@@ -1,10 +1,12 @@
-import { ClerkProvider } from '@clerk/nextjs'
-import './globals.css'
-import { hasValidClerkPublishableKey } from '@/lib/clerk-utils'
-import { Analytics } from '@vercel/analytics/next'
-import { syncUser } from '@/app/actions/user'
-import Nav from './components/Nav'
-import Footer from './components/Footer'
+import { ClerkProvider } from "@clerk/nextjs";
+import "./globals.css";
+import { hasValidClerkPublishableKey } from "@/lib/clerk-utils";
+import { Analytics } from "@vercel/analytics/next";
+import { syncUser } from "@/app/actions/user";
+import Nav from "./components/Nav";
+import Footer from "./components/Footer";
+import CookieConsent from "./components/CookieConsent";
+import AnalyticsGate from "./components/AnalyticsGate";
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? ''
 const isClerkConfigured = hasValidClerkPublishableKey(publishableKey)
@@ -87,7 +89,10 @@ export default async function RootLayout({
       </head>
       <body>
         {content}
-        <Analytics />
+        <CookieConsent />
+        {/* Vercel Analytics gated behind cookie consent — Phase 2 (points 4, 8, 9).
+            Analytics only loads after user grants consent via the CookieConsent banner. */}
+        <AnalyticsGate />
       </body>
     </html>
   )

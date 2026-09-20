@@ -148,6 +148,13 @@ export default function RepairPage() {
           entity setup guide, milestone timeline, and full dashboard access.
         </p>
       </div>
+      <p className="results-disclaimer">
+        Verdic™ is an educational fundability assessment, not a credit report or a guarantee of
+        approval. Capital products, terms, and timelines vary by lender, business profile, and
+        market conditions. Past outcomes shown are representative examples, not promises of
+        specific results. You are never required to purchase any service to exercise your credit
+        rights.
+      </p>
     </div>
   );
 }

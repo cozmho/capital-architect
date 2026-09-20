@@ -65,7 +65,7 @@ export default function RepairPage() {
             Your credit profile needs repair before pursuing funding. Good news: this is a solved problem.
           </p>
           <p className="mt-4 text-zinc-400">
-            Follow the DIY playbook or work with our credit optimization partners. Either way, you&apos;ll be back in 60-90 days ready for Tier B.
+            Follow the DIY playbook or work with our credit optimization partners. Either way, you&apos;ll be back in 60-90 days and ready to re-assess for Tier B.
           </p>
         </div>
 

@@ -55,7 +55,9 @@ export default function LeadMagnet() {
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
+              <label htmlFor="lm-name" className="sr-only">Your name</label>
               <input
+                id="lm-name"
                 className="form-field"
                 type="text"
                 name="name"
@@ -64,7 +66,9 @@ export default function LeadMagnet() {
                 onChange={handleChange}
                 required
               />
+              <label htmlFor="lm-email" className="sr-only">Email address</label>
               <input
+                id="lm-email"
                 className="form-field"
                 type="email"
                 name="email"
@@ -73,7 +77,9 @@ export default function LeadMagnet() {
                 onChange={handleChange}
                 required
               />
+              <label htmlFor="lm-business" className="sr-only">Business name (optional)</label>
               <input
+                id="lm-business"
                 className="form-field"
                 type="text"
                 name="business"
@@ -81,7 +87,6 @@ export default function LeadMagnet() {
                 value={form.business}
                 onChange={handleChange}
               />
-              {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
               <button 
                 className="form-submit" 
                 type="submit"

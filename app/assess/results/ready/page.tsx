@@ -62,10 +62,10 @@ export default function ReadyPage() {
 
         <div className="mt-8 rounded-2xl border border-[#C8A84B]/30 bg-[#C8A84B]/5 p-8">
           <p className="text-lg text-zinc-300">
-            Your profile clears our underwriting criteria. You&apos;re ready for capital deployment.
+            Your profile clears our underwriting criteria. You&apos;re positioned to pursue capital.
           </p>
           <p className="mt-4 text-zinc-400">
-            Next step: strategy call to map your funding stack and lock in terms.
+            Next step: strategy call to map your funding stack and discuss terms.
           </p>
         </div>
 

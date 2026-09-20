@@ -81,7 +81,7 @@ export default function PrepPage() {
             Start Your Funding Readiness Intensive — $1,500
           </Link>
           <p className="text-sm text-zinc-500">
-            14-day program • Entity + Credit + Documentation • Tier A guarantee
+            14-day program • Entity + Credit + Documentation • Tier A target
           </p>
         </div>
 

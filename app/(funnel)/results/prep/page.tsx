@@ -99,7 +99,7 @@ export default function PrepPage() {
               </svg>
             </div>
             <span>
-              <strong>60–90 day sprint to Tier A</strong> — with targeted credit
+              <strong>60–90 day projected sprint to Tier A</strong> — with targeted credit
               architecture and dispute resolution, your path to full capital
               access is clear and achievable.
             </span>
@@ -132,6 +132,13 @@ export default function PrepPage() {
           capital stack sequencing, and full dashboard access.
         </p>
       </div>
+      <p className="results-disclaimer">
+        Verdic™ is an educational fundability assessment, not a credit report or a guarantee of
+        approval. Capital products, terms, and timelines vary by lender, business profile, and
+        market conditions. Past outcomes shown are representative examples, not promises of
+        specific results. You are never required to purchase any service to exercise your credit
+        rights.
+      </p>
     </div>
   );
 }

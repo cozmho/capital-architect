@@ -720,7 +720,7 @@ export default function AssessPage() {
               {/* Navigation buttons */}
               {step >= 1 && (
                 <div className="intake-actions">
-                  <button type="button" className="btn-ghost" onClick={handleBack}>
+                  <button type="button" className="btn-ghost" onClick={handleBack} aria-label="Go back to the previous step">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
@@ -740,7 +740,7 @@ export default function AssessPage() {
                       )}
                     </button>
                   ) : (
-                    <button type="button" className="btn-primary" onClick={handleNext}>
+                    <button type="button" className="btn-primary" onClick={handleNext} aria-label="Continue to the next step">
                       Continue
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M5 12h14M12 5l7 7-7 7" />

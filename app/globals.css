@@ -735,6 +735,487 @@ footer {
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   PHASE 4 — GLOBAL ACCESSIBILITY: FOCUS VISIBLE + SCREEN READER ONLY
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Screen-reader-only text (used for form labels, aria-only content) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Global focus-visible — visible keyboard focus indicator on every interactive element.
+   WCAG 2.4.7 (Focus Visible) + 2.4.13 (Focus Appearance). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Ensure :focus (mouse click) doesn't show the outline — only :focus-visible does */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+[tabindex]:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Nav links */
+.nav-links a:focus-visible,
+.nav-cta:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Card links */
+.card-link:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Form fields */
+.form-field:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+/* Results CTAs */
+.results-cta:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Path selector cards */
+.path-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
+
+/* Footer links */
+.footer-col a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Results disclaimer */
+.results-disclaimer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  font-weight: 300;
+  max-width: 640px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PHASE 6 — COMPLIANCE AUDIT DASHBOARD STYLES
+   ══════════════════════════════════════════════════════════════════ */
+
+.compliance-audit {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 64px 5%;
+  font-family: var(--sans);
+}
+
+.compliance-header {
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.compliance-title {
+  font-family: var(--serif);
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.compliance-subtitle {
+  font-size: 15px;
+  color: var(--muted);
+  font-weight: 300;
+  margin-bottom: 28px;
+}
+
+.compliance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: var(--radius-lg);
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 32px;
+}
+
+.badge-pass {
+  background: var(--green-bg);
+  border: 1px solid rgba(125, 196, 74, 0.25);
+  color: var(--green);
+}
+
+.badge-fail {
+  background: var(--red-bg);
+  border: 1px solid rgba(226, 75, 74, 0.25);
+  color: var(--red);
+}
+
+.badge-icon {
+  flex-shrink: 0;
+}
+
+.badge-pass .badge-icon { color: var(--green); }
+.badge-fail .badge-icon { color: var(--red); }
+
+.compliance-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-number {
+  font-family: var(--serif);
+  font-size: 40px;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.stat-pass { color: var(--green); }
+.stat-na   { color: var(--muted); }
+.stat-fail { color: var(--red); }
+
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.compliance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.compliance-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-pass { border-color: rgba(125, 196, 74, 0.2); }
+.card-na   { border-color: var(--border); }
+.card-fail { border-color: rgba(226, 75, 74, 0.3); }
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.card-phase {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.card-status {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.card-pass .card-status {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid rgba(125, 196, 74, 0.2);
+}
+
+.card-na .card-status {
+  background: rgba(142, 154, 173, 0.1);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.card-fail .card-status {
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1px solid rgba(226, 75, 74, 0.2);
+}
+
+.card-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.card-detail {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+  font-weight: 300;
+  flex: 1;
+}
+
+.card-where {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.compliance-footer {
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.compliance-footer p {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.65;
+  max-width: 640px;
+  margin: 0 auto 12px;
+}
+
+.compliance-footer-note {
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PRIVACY CONSENT — Phase 3 (Intake Form Compliance)
+   ══════════════════════════════════════════════════════════════════ */
+
+.privacy-consent {
+  margin: 32px 0 24px;
+  padding: 24px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.privacy-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.privacy-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+.privacy-check-text {
+  font-weight: 400;
+}
+
+.privacy-link {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+
+.privacy-link:hover {
+  color: var(--gold-lt);
+}
+
+.privacy-notice {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 28px;
+  font-weight: 300;
+}
+
+.privacy-notice a {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Focus visibility for the privacy checkbox */
+.privacy-label input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Required field indicator */
+.intake-field label .required-star {
+  color: var(--red);
+  margin-left: 2px;
+}
+
+/* Step headers link to privacy policy */
+.step-sub a.privacy-ref {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 400;
+}
+
+/* Error state for unchecked checkbox — red border */
+.privacy-label input[type="checkbox"].field-error {
+  outline: 2px solid var(--red);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   COOKIE CONSENT — Phase 2
+   ══════════════════════════════════════════════════════════════════ */
+
+.cookie-consent-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: var(--bg2);
+  border-top: 1px solid var(--gold-bdr);
+  padding: 16px 5%;
+  font-size: 13px;
+}
+
+.cookie-consent-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.cookie-consent-text {
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.6;
+  flex: 1;
+  min-width: 240px;
+}
+
+.cookie-consent-link {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 400;
+}
+
+.cookie-consent-link:hover { color: var(--gold-lt); }
+
+.cookie-consent-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cookie-btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.cookie-btn-accept {
+  background: var(--gold);
+  color: #060A14;
+  border-color: var(--gold);
+}
+
+.cookie-btn-accept:hover { background: var(--gold-lt); }
+
+.cookie-btn-deny {
+  background: transparent;
+  color: var(--muted);
+  border-color: var(--border);
+}
+
+.cookie-btn-deny:hover { border-color: var(--border-md); color: var(--text); }
+
+.contact-calendly-pending {
+  background: var(--bg3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.contact-calendly-message {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════════════════════════════
    VERDIC™ INTAKE FORM + RESULTS PAGES
    ══════════════════════════════════════════════════════════════════ */
 

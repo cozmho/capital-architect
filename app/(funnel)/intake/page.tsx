@@ -83,6 +83,7 @@ export default function IntakePage() {
   const [preForm, setPreForm] = useState(INITIAL_PREBIZ);
   const [errors, setErrors] = useState<FieldError>({});
   const [submitting, setSubmitting] = useState(false);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
 
   const totalSteps = path === "business" ? 4 : 3;
 
@@ -199,6 +200,10 @@ export default function IntakePage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateStep()) return;
+    if (!privacyConsent) {
+      setErrors((prev) => ({ ...prev, privacyConsent: "You must agree to the Privacy Policy to continue." }));
+      return;
+    }
     setSubmitting(true);
 
     try {
@@ -722,10 +727,45 @@ export default function IntakePage() {
                 </>
               )}
 
+              {/* Privacy consent — required before submission (Phase 3, Point 6) */}
+              {isLastStep && (
+                <div className="privacy-consent">
+                  <div className="intake-field">
+                    <label htmlFor="privacy-consent" className="privacy-label">
+                      <input
+                        type="checkbox"
+                        id="privacy-consent"
+                        checked={privacyConsent}
+                        onChange={(e) => setPrivacyConsent(e.target.checked)}
+                        aria-describedby="privacy-notice privacy-error"
+                        aria-invalid={errors.privacyConsent ? "true" : undefined}
+                        className={errors.privacyConsent ? "field-error" : ""}
+                      />
+                      <span className="privacy-check-text">
+                        I have read and agree to the{" "}
+                        <a href="/privacy" className="privacy-link">Privacy Policy</a>{" "}
+                        and understand how my information will be used.
+                      </span>
+                    </label>
+                    {errors.privacyConsent && (
+                      <p id="privacy-error" className="intake-error" role="alert">
+                        {errors.privacyConsent}
+                      </p>
+                    )}
+                  </div>
+                  <p id="privacy-notice" className="privacy-notice">
+                    We collect your name, email, phone, and business information to calculate
+                    your Verdic™ score and contact you about funding opportunities. We do not
+                    pull your credit. See the{" "}
+                    <a href="/privacy" className="privacy-link">Privacy Policy</a> for full details.
+                  </p>
+                </div>
+              )}
+
               {/* Navigation buttons */}
               {step >= 1 && (
                 <div className="intake-actions">
-                  <button type="button" className="btn-ghost" onClick={handleBack}>
+                  <button type="button" className="btn-ghost" onClick={handleBack} aria-label="Go back to the previous step">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
@@ -745,7 +785,7 @@ export default function IntakePage() {
                       )}
                     </button>
                   ) : (
-                    <button type="button" className="btn-primary" onClick={handleNext}>
+                    <button type="button" className="btn-primary" onClick={handleNext} aria-label="Continue to the next step">
                       Continue
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M5 12h14M12 5l7 7-7 7" />

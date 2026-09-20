@@ -143,6 +143,14 @@ export default function ReadyPage() {
           Includes your personalized funding roadmap, capital stack sequencing,
           lender-ready positioning, and full dashboard access.
         </p>
+
+        <p className="results-disclaimer">
+          Verdic™ is an educational fundability assessment, not a credit report or a guarantee of
+          approval. Capital products, terms, and timelines vary by lender, business profile, and
+          market conditions. Past outcomes shown are representative examples, not promises of
+          specific results. You are never required to purchase any service to exercise your credit
+          rights.
+        </p>
       </div>
 
       {/* CROA Disclosure Modal */}

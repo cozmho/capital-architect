@@ -76,3 +76,67 @@ model Lead {
   @@index([paymentStatus])
   @@index([followUpSentAt])
 }
+
+model AgentRun {
+  id          String      @id @default(cuid())
+  objective   String
+  status      RunStatus   @default(PENDING)
+  costEstimate Float      @default(0)
+  totalTokens Int         @default(0)
+  tasks       AgentTask[]
+  logs        AgentTaskLog[]
+  createdAt   DateTime    @default(now())
+  completedAt DateTime?
+}
+
+model AgentTask {
+  id          String     @id @default(cuid())
+  runId       String
+  run         AgentRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  agentName   String
+  model       String
+  description String?
+  input       Json
+  output      Json?
+  status      TaskStatus @default(PENDING)
+  retryCount  Int        @default(0)
+  error       String?
+  tokensUsed  Int        @default(0)
+  order       Int        @default(0)
+  dependsOn   String?
+  createdAt   DateTime   @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+}
+
+model AgentTaskLog {
+  id        String   @id @default(cuid())
+  runId     String
+  run       AgentRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  taskId    String?
+  message   String
+  level     LogLevel @default(INFO)
+  createdAt DateTime  @default(now())
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum TaskStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  APPROVAL_REQUIRED
+}
+
+enum LogLevel {
+  INFO
+  DEBUG
+  WARN
+  ERROR
+}
