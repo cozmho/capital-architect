@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 const dmSerif = DM_Serif_Display({
@@ -27,22 +26,51 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://capital-architect.vercel.app";
+
   return (
-    <ClerkProvider
-      appearance={{
-        variables: {
-          colorPrimary: "#C8A84B",
-          colorBackground: "#0C1220",
-          colorInputBackground: "#111827",
-          colorInputText: "#F0EDE6",
-          borderRadius: "8px",
-          fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
-        },
-      }}
-    >
-      <html lang="en" className={`${dmSerif.variable} ${dmSans.variable}`}>
-        <body>{children}</body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" className={`${dmSerif.variable} ${dmSans.variable}`}>
+      <head>
+        <script
+          id="website-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Capital Architect",
+              url: siteUrl,
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${siteUrl}/search?query={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
+        <script
+          id="software-application-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Capital Architect Funding Roadmap",
+              applicationCategory: "BusinessApplication",
+              offers: {
+                "@type": "Offer",
+                price: "350",
+                priceCurrency: "USD",
+                availability: "https://schema.org/InStock",
+              },
+            }),
+          }}
+        />
+      </head>
+      <body>
+        {children}
+      </body>
+    </html>
   );
 }

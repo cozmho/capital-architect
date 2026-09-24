@@ -1,0 +1,16 @@
+# Capital Architect
+
+## Overview
+Capital Architect provides automated fundability scoring and expert credit architecture to help businesses secure capital on favorable terms.
+
+## Core Offering
+- **Funding Roadmap**: Personalized capital stack sequencing, dispute strategy, lender-ready positioning, credit optimization, dashboard access.
+- **Price**: One-time $350 purchase.
+- **Outcome**: Clients typically improve fundability scores and secure funding faster.
+
+## How to Engage
+Visit the site, click “Unlock Your Funding Roadmap — $350”, complete Stripe checkout, and gain immediate dashboard access.
+
+## Documentation
+- No public API; the product is a SaaS dashboard.
+- Support: contact@capitalarchitect.example.com

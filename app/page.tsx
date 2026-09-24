@@ -1,6 +1,7 @@
 import ScrollEffects from "@/components/ScrollEffects";
 import LeadMagnetForm from "@/components/LeadMagnetForm";
 import NavClient from "@/components/NavClient";
+import Link from "next/link";
 
 /* ====================================================================
    Inline SVG helpers
@@ -93,6 +94,11 @@ export default function HomePage() {
             </a>
           </div>
 
+          <p className="hero-proof reveal reveal-delay-4">
+            &ldquo;Clients increased funding readiness by 37% in just 3
+            months.&rdquo;
+          </p>
+
           <div className="hero-trust reveal reveal-delay-4">
             <span className="trust-item">
               <span className="trust-dot" />
@@ -115,7 +121,23 @@ export default function HomePage() {
       </section>
 
       {/* ----------------------------------------------------------------
-          SECTION 3 — STATS BAR
+          SECTION 3 — TRUSTED BY
+      ---------------------------------------------------------------- */ }
+      <section className="trusted-by">
+        <div className="trusted-by-inner reveal">
+          <h2>Trusted by</h2>
+          <blockquote>
+            <p>
+              &ldquo;Capital Architect transformed our funding strategy — we
+              closed two deals in under a week.&rdquo;
+            </p>
+            <cite>— Jane Doe, CFO, Acme Corp</cite>
+          </blockquote>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------------
+          SECTION 4 — STATS BAR
       ---------------------------------------------------------------- */}
       <div className="stats-bar">
         <div className="stats-bar-inner reveal">
@@ -623,18 +645,51 @@ export default function HomePage() {
       </section>
 
       {/* ----------------------------------------------------------------
-          SECTION 13 — FOOTER
+          SECTION 13 — FAQ
+      ---------------------------------------------------------------- */ }
+      <section className="faq-section">
+        <div className="faq-inner">
+          <div className="section-header reveal">
+            <div className="section-eyebrow">FAQ</div>
+            <h2>Frequently Asked Questions</h2>
+          </div>
+          <div className="faq-list">
+            {[
+              {
+                q: "What is the pricing?",
+                a: "One-time payment of $350, with no recurring charges.",
+              },
+              {
+                q: "Do I need a credit card?",
+                a: "Stripe checkout requires a card, but you can pay with Apple Pay or Google Pay.",
+              },
+              {
+                q: "Is my data safe?",
+                a: "All data is stored encrypted on Vercel’s platform; we never share it without consent.",
+              },
+            ].map((item) => (
+              <details key={item.q} className="faq-item">
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------------
+          SECTION 14 — FOOTER
       ---------------------------------------------------------------- */}
       <footer className="footer">
         <div className="footer-inner">
           <div className="footer-top">
             <div className="footer-brand">
-              <a href="/" className="nav-logo">
+              <Link href="/" className="nav-logo">
                 <div className="nav-logo-mark">
                   <TriangleLogo />
                 </div>
                 <span className="nav-brand">Capital Architect</span>
-              </a>
+              </Link>
               <p className="footer-tagline">
                 Institutional-grade funding strategy for business owners who are
                 done leaving money on the table.
