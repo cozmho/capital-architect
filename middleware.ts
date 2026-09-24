@@ -1,7 +1,15 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-// Define public routes, including your landing page
-const isPublicRoute = createRouteMatcher(['/']);
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/intake(.*)',
+  '/contact(.*)',
+  '/membership(.*)',
+  '/results(.*)',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/webhooks/stripe(.*)',
+]);
 
 export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
