@@ -1,13 +1,10 @@
 "use client";
 
-import { useUser, SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/00wdR8h1F0rT8wCdvLaVa00";
 
 export default function MembershipPage() {
-  const { isSignedIn, user } = useUser();
-  const firstName = user?.firstName || "there";
-
   return (
     <div className="membership-container">
       <div className="membership-header">
@@ -68,39 +65,22 @@ export default function MembershipPage() {
           </li>
         </ul>
 
-        {isSignedIn ? (
-          <div className="membership-cta-section">
-            <p className="membership-greeting">
-              Welcome back, {firstName}. Complete your purchase to unlock full
-              dashboard access.
-            </p>
-            <a
-              href={STRIPE_PAYMENT_LINK}
-              className="btn-primary membership-cta"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Unlock Your Funding Roadmap — $350
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </a>
-          </div>
-        ) : (
-          <div className="membership-cta-section">
-            <p className="membership-greeting">
-              Create your account first, then complete your purchase.
-            </p>
-            <SignInButton mode="modal">
-              <button className="btn-primary membership-cta">
-                Sign In to Continue
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </button>
-            </SignInButton>
-          </div>
-        )}
+        <div className="membership-cta-section">
+          <p className="membership-greeting">
+            Create your account first, then complete your purchase.
+          </p>
+          <a
+            href={STRIPE_PAYMENT_LINK}
+            className="btn-primary membership-cta"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Unlock Your Funding Roadmap — $350
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
 
         <p className="membership-fine">
           Secure payment via Stripe. One-time purchase — no subscriptions, no
