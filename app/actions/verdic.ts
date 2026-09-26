@@ -12,6 +12,8 @@
 // TODO: Wire to Supabase to persist prospect data and scores
 // ============================================================================
 
+import { supabaseAdmin } from "@/lib/supabase";
+
 // ---------------------------------------------------------------------------
 // BUSINESS PATH — Full intake
 // ---------------------------------------------------------------------------
@@ -103,6 +105,32 @@ export interface VerdicResult {
 // ============================================================================
 // SCORING ENGINE
 // ============================================================================
+
+async function persistLead(data: IntakeFormData, score: number, tier: string, route: string) {
+  try {
+    const { error } = await supabaseAdmin.from("leads").insert({
+      full_name: data.fullName || "Anonymous Prospect",
+      email: data.email,
+      phone: data.phone || null,
+      business_name: "businessName" in data ? data.businessName : null,
+      industry: "industry" in data ? data.industry : null,
+      tier: tier,
+      score: score,
+      status: "new",
+      metadata: {
+        path: data.path,
+        route: route,
+        formData: data,
+      },
+    });
+    if (error) {
+      console.error("[VERDIC] Supabase insert error:", error.message);
+    }
+  } catch (err) {
+    console.error("[VERDIC] Unexpected persistence error:", err);
+  }
+}
+
 export async function calculateVerdicScore(
   formData: IntakeFormData
 ): Promise<VerdicResult> {
@@ -127,7 +155,7 @@ export async function calculateVerdicScore(
 // ============================================================================
 // BUSINESS PATH SCORING — Base 100
 // ============================================================================
-function scoreBusinessPath(data: BusinessFormData): VerdicResult {
+async function scoreBusinessPath(data: BusinessFormData): Promise<VerdicResult> {
   let score = 100;
 
   // --- Credit Score Impact (heaviest weight) ---
@@ -283,13 +311,14 @@ function scoreBusinessPath(data: BusinessFormData): VerdicResult {
 
   console.log(`=== VERDIC RESULT [BUSINESS]: Score=${score}, Tier=${tier} ===`);
 
+  await persistLead(data, score, tier, route);
   return { score, tier, route, hasMetro2Errors, path: "business", complianceItems };
 }
 
 // ============================================================================
 // PRE-BUSINESS PATH SCORING — Base 85
 // ============================================================================
-function scorePreBusinessPath(data: PreBusinessFormData): VerdicResult {
+async function scorePreBusinessPath(data: PreBusinessFormData): Promise<VerdicResult> {
   let score = 85; // Structurally lower ceiling — no operating entity yet
 
   // --- Credit Score Impact ---
@@ -371,5 +400,8 @@ function scorePreBusinessPath(data: PreBusinessFormData): VerdicResult {
 
   console.log(`=== VERDIC RESULT [PRE-BUSINESS]: Score=${score}, Tier=${tier} ===`);
 
+  await persistLead(data, score, tier, route);
   return { score, tier, route, hasMetro2Errors, path: "pre-business", complianceItems: [] };
 }
+
+

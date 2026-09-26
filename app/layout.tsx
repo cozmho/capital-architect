@@ -30,7 +30,7 @@ export default function RootLayout({
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://capital-architect.vercel.app";
 
   return (
-    <html lang="en" className={`${dmSerif.variable} ${dmSans.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${dmSerif.variable} ${dmSans.variable}`}>
       <head>
         <script
           id="website-schema"
@@ -74,3 +74,4 @@ export default function RootLayout({
     </html>
   );
 }
+
