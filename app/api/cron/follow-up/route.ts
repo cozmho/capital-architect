@@ -2,13 +2,17 @@ import { NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/prisma";
 import { sendFollowUpEmail } from "@/app/actions/emails";
 
-const prisma = getPrismaClient();
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  // Verify cron secret (Vercel automatically sends this)
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  const prisma = getPrismaClient();
+  if (!prisma) {
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   }
 
   const now = new Date();
@@ -16,7 +20,6 @@ export async function GET(req: Request) {
   const seventyTwoHoursAgo = new Date(now.getTime() - 72 * 60 * 60 * 1000);
 
   try {
-    // Find leads who completed assessment but haven't paid
     const leads = await prisma.lead.findMany({
       where: {
         status: { in: ["VERDIC_SCORED", "ASSESSMENT_COMPLETE", "INTAKE_COMPLETE"] },
@@ -29,7 +32,7 @@ export async function GET(req: Request) {
           { followUpSentAt: { lt: seventyTwoHoursAgo } },
         ],
       },
-      take: 50, // Batch limit to stay within Vercel function timeout
+      take: 50,
       orderBy: { createdAt: "asc" },
     });
 

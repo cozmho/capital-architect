@@ -6,10 +6,8 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-/**
- * Returns a cached Prisma client instance.
- * Using the standard Prisma connection pooler which supports PgBouncer (port 6543).
- */
+let _real: PrismaClient | null = null;
+
 export function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) {
     return globalForPrisma.prisma;
@@ -17,9 +15,15 @@ export function getPrismaClient(): PrismaClient {
 
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    throw new Error(
-      "DATABASE_URL is not configured. Set it in your environment (Vercel Project Settings -> Environment Variables)."
-    );
+    // Return a proxy that throws only when a method is actually invoked,
+    // so module-level `const prisma = getPrismaClient()` doesn't fail at build time.
+    const msg = "DATABASE_URL is not configured. Set it in your environment.";
+    return new Proxy({} as PrismaClient, {
+      get(_target, prop) {
+        if (prop === Symbol.toPrimitive) return () => "PrismaClient(unconfigured)";
+        throw new Error(msg);
+      },
+    });
   }
 
   const pool = new pg.Pool({ connectionString });
@@ -29,8 +33,7 @@ export function getPrismaClient(): PrismaClient {
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
 
-  // Cache client in all environments to avoid connection pool exhaustion
   globalForPrisma.prisma = client;
-
+  _real = client;
   return client;
 }

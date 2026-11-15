@@ -1,0 +1,9 @@
+name,phone,email,ficoScore,stage,notes,holdDisputes,attorneySettlement,createdAt
+Terry J. Pringle Sr.,,,"terry.pringle@capitalarchitect.tech",627,ACTIVE_LOAN_HOLD,"8912 S Phillips Ave, Chicago, IL 60617. Gate 0 Attorney Filter: ENFIN/LAUNCH solar lease ($1,459 past due Experian; $0 Equifax/TU). inAttorneySettlement=true.",true,true,2026-01-15T10:00:00Z
+Ashley Murray,,,"ashley.murray@capitalarchitect.tech",,WARM_FUNDING_CHECK,"Jul 2 2026 EX: 7 derogatories disputed, 2% utilization.",false,false,2026-06-12T09:30:00Z
+Shameka Fowlkes,,,"shameka.fowlkes@capitalarchitect.tech",610,WARM_FOLLOWUP,"3 BKs, Global Lending, First Premier, Self.",false,false,2026-06-20T14:00:00Z
+Joshua Pringle,,,joshua.pringle@capitalarchitect.tech",558,ROUND_1_STAGED,"Self-Employed + State of IL; AU bridge + Round 1.",false,false,2026-06-05T11:00:00Z
+Asa Alante Adkins,,,asa.adkins@capitalarchitect.tech",525,ROUND_2_READY,"Sep 28 2026 Round 1 complete; check $205 Credit One & fire MOV.",false,false,2026-06-25T08:45:00Z
+Fridai McElroy,,,fridai.mcelroy@capitalarchitect.tech",,WARM_ROUND_2,"Jul 1 2026 EX: 30 accounts / $69,928 disputed.",false,false,2026-07-01T10:15:00Z
+Nakia Hudson,,,nakia.hudson@capitalarchitect.tech",506,WARM_ROUND_2,"Jul 1 2026 EX: 9 accounts / $5,931 active disputed.",false,false,2026-07-01T10:30:00Z
+Sharretta,,,sharretta@capitalarchitect.tech",,WARM_REACTIVATION,"Prior client record; request updated report or 5 numbers.",false,false,2026-05-18T09:00:00Z

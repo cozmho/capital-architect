@@ -1,97 +1,87 @@
 import { TaskPlanSchema, type TaskPlan, type Subtask } from "./schemas";
+import { callGemini, extractJson, executeWithRetry, getApiKey } from "./gemini";
+
+const DEFAULT_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-3-flash-preview";
+
+function buildSystemPrompt(schemaDescription: string): string {
+  return `You are a task planning assistant for the Capital Architect multi-agent system.
+
+${schemaDescription}
+
+Output ONLY valid JSON. No markdown, no explanations, no text outside the JSON object.
+The JSON must parse cleanly and pass Zod validation against the schema above.`;
+}
+
+function buildUserPrompt(objective: string, context?: Record<string, unknown>): string {
+  const contextSection = context && Object.keys(context).length > 0
+    ? `\n\nAdditional context:\n${Object.entries(context).map(([k, v]) => `- ${k}: ${String(v)}`).join("\n")}`
+    : "";
+
+  return `Decompose the following objective into a prioritized list of subtasks for specialized agents.
+
+Objective: "${objective}"${contextSection}
+
+Rules:
+- Each subtask must have a unique id (use "task_1", "task_2", etc.)
+- Assign order numbers starting from 0, in execution sequence
+- If a subtask depends on another, set dependsOn to that subtask's id
+- agentName must be one of: Researcher, Copywriter, Compliance
+- payload must match the input schema for the chosen agent (see schema details below)
+- description should be a concise one-line summary of what this subtask does
+- Include 1-5 subtasks. If the objective is simple, 1-2 may be enough.
+- If no agents are relevant, include a single Researcher subtask.`;
+
+}
 
 /**
- * Commander: decomposes a user goal into a typed subtask plan.
- *
- * In production this would call an LLM (OpenRouter) to generate the plan.
- * For now it uses rule-based decomposition as a deterministic baseline.
- * Replace the body with an LLM call when ready — the Zod schema
- * validates whatever comes back.
+ * Decomposes a user objective into a typed subtask plan using Gemini.
+ * The response is validated against TaskPlanSchema before returning.
  */
 export async function command(
   objective: string,
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
 ): Promise<TaskPlan> {
-  // TODO: replace with OpenRouter LLM call when API key is configured.
-  // Example:
-  //   const response = await openRouter.chat.complete({
-  //     model: "anthropic/claude-3.5-sonnet",
-  //     messages: [{ role: "user", content: `Decompose: ${objective}` }],
-  //     response_format: { type: "json_object" },
-  //   });
-  //   const parsed = TaskPlanSchema.parse(JSON.parse(response.choice));
-
-  const subtasks: Subtask[] = decomposeRuleBased(objective, context);
-  return { subtasks };
+  const schemaDescription = `
+The output must be a JSON object with this structure:
+{
+  "subtasks": [
+    {
+      "id": "string — unique identifier, use task_1, task_2, etc.",
+      "agentName": "Researcher" | "Copywriter" | "Compliance",
+      "recommendedModel": "string — model name for this subtask",
+      "payload": { ... } — input payload matching the agent's input schema,
+      "description": "string — one-line description of this subtask",
+      "dependsOn": "string? — id of a subtask this depends on (optional)",
+      "order": number — execution order, starting from 0
+    }
+  ]
 }
 
-/**
- * Rule-based fallback decomposition. Each goal keyword triggers specific agents.
- */
-function decomposeRuleBased(
-  objective: string,
-  _context?: Record<string, unknown>
-): Subtask[] {
-  const lower = objective.toLowerCase();
-  const subtasks: Subtask[] = [];
-  let order = 0;
+Agent input schemas:
+- Researcher: { query: string, context?: object, focusAreas?: string[] }
+- Copywriter: { topic: string, tone: "professional" | "casual" | "technical" | "persuasive", audience?: string, length?: "short" | "medium" | "long", sourceMaterial?: object }
+- Compliance: { content: string, checkType: "cfpb" | "fomc" | "disclaimer" | "general", jurisdiction?: string }
 
-  // Compliance check always runs first if there's content to check
-  if (lower.includes("compliance") || lower.includes("regulation") ||
-      lower.includes("legal") || lower.includes("cfpb") || lower.includes("fomc")) {
-    subtasks.push({
-      agentName: "Compliance",
-      recommendedModel: "anthropic/claude-3.5-sonnet",
-      description: "Review content for regulatory and compliance issues",
-      payload: { content: objective, checkType: "general" },
-      order: order++,
-    });
-  }
+If a subtask depends on another, its order must be greater than the dependency's order.`;
 
-  // Research for informational goals
-  if (lower.includes("research") || lower.includes("investigate") ||
-      lower.includes("find") || lower.includes("analyze") ||
-      lower.includes("market") || lower.includes("competitive")) {
-    subtasks.push({
-      agentName: "Researcher",
-      recommendedModel: "meta-llama/llama-3.1-8b-instruct",
-      description: "Research and gather information",
-      payload: { query: objective },
-      dependsOn: getFirstTask(subtasks),
-      order: order++,
-    });
-  }
+  const systemPrompt = buildSystemPrompt(schemaDescription);
+  const userPrompt = buildUserPrompt(objective, context);
 
-  // Copywriting for content generation goals
-  if (lower.includes("write") || lower.includes("generate") ||
-      lower.includes("draft") || lower.includes("create") ||
-      lower.includes("content") || lower.includes("email") ||
-      lower.includes("report") || lower.includes("article")) {
-    const researchTask = subtasks.find(t => t.agentName === "Researcher");
-    subtasks.push({
-      agentName: "Copywriter",
-      recommendedModel: "meta-llama/llama-3.1-8b-instruct",
-      description: "Generate content based on research and objectives",
-      payload: { topic: objective, tone: "professional" },
-      dependsOn: researchTask?.id,
-      order: order++,
-    });
-  }
+  const raw = await executeWithRetry(async () => {
+    const text = await callGemini(userPrompt, systemPrompt, DEFAULT_MODEL);
+    return extractJson(text);
+  });
 
-  // If no agents matched, default to Researcher
-  if (subtasks.length === 0) {
-    subtasks.push({
-      agentName: "Researcher",
-      recommendedModel: "meta-llama/llama-3.1-8b-instruct",
-      description: `Research: ${objective}`,
-      payload: { query: objective },
-      order: order++,
-    });
-  }
+  const parsed = TaskPlanSchema.parse(JSON.parse(raw));
 
-  return subtasks;
-}
+  // Ensure IDs are unique
+  const seen = new Set<string>();
+  parsed.subtasks.forEach((t, i) => {
+    if (seen.has(t.id)) {
+      t.id = `${t.id}_${i}`;
+    }
+    seen.add(t.id);
+  });
 
-function getFirstTask(subtasks: Subtask[]): string | undefined {
-  return subtasks[0]?.id;
+  return parsed;
 }

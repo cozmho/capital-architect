@@ -140,3 +140,33 @@ enum LogLevel {
   WARN
   ERROR
 }
+
+enum ClientStage {
+  ACTIVE_LOAN_HOLD
+  ROUND_1_STAGED
+  ROUND_2_READY
+  WARM_FUNDING_CHECK
+  WARM_ROUND_2
+  WARM_FOLLOWUP
+  WARM_REACTIVATION
+}
+
+
+model Client {
+  id                 String        @id @default(cuid())
+  name               String
+  phone              String?
+  email              String?
+  ficoScore          Int?
+  stage              ClientStage   @default(WARM_FOLLOWUP)
+  notes              String?
+  holdDisputes       Boolean       @default(false)
+  attorneySettlement Boolean       @default(false)
+  activityLog        Json          @default("[]")
+  documents          Json          @default("[]")
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @default(now()) @updatedAt
+
+  @@index([stage])
+  @@index([email])
+}
