@@ -6,6 +6,7 @@ type FetchOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: any;
   headers?: Record<string, string>;
+  params?: Record<string, string>;
 };
 
 export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
@@ -15,7 +16,14 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(url, {
+  // Build URL with query params
+  let fullUrl = url;
+  if (options.params) {
+    const searchParams = new URLSearchParams(options.params);
+    fullUrl += `?` + searchParams.toString();
+  }
+
+  const response = await fetch(fullUrl, {
     method: options.method || 'GET',
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
