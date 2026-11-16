@@ -30,6 +30,15 @@ async function sendConfirmation(email: string, name?: string | null) {
   }
 }
 
+async function persistProspect(prospect: Parameters<typeof upsertProspect>[0]) {
+  try {
+    await upsertProspect(prospect);
+  } catch (error) {
+    console.error("Supabase prospect persistence failed:", error);
+    throw error;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
@@ -51,41 +60,49 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const email = session.customer_details?.email;
-      const customerName = session.customer_details?.name;
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const email = session.customer_details?.email;
+        const customerName = session.customer_details?.name;
 
-      console.log("=== PAYMENT RECEIVED ===");
-      console.log("Email:", email);
-      console.log("Name:", customerName);
-      console.log("Amount:", session.amount_total);
-      console.log("Payment ID:", session.payment_intent);
+        console.log("=== PAYMENT RECEIVED ===");
+        console.log("Email:", email);
+        console.log("Name:", customerName);
+        console.log("Amount:", session.amount_total);
+        console.log("Payment ID:", session.payment_intent);
 
-      if (email) {
-        await upsertProspect({ email, name: customerName });
-        await sendConfirmation(email, customerName);
+        if (email) {
+          await persistProspect({ email, name: customerName });
+          await sendConfirmation(email, customerName);
+        }
+        break;
       }
-      break;
-    }
 
-    case "payment_intent.succeeded": {
-      const intent = event.data.object as Stripe.PaymentIntent;
-      const email = intent.receipt_email;
+      case "payment_intent.succeeded": {
+        const intent = event.data.object as Stripe.PaymentIntent;
+        const email = intent.receipt_email;
 
-      console.log("=== PAYMENT INTENT SUCCEEDED ===");
-      console.log("Email:", email);
-      console.log("Amount:", intent.amount);
+        console.log("=== PAYMENT INTENT SUCCEEDED ===");
+        console.log("Email:", email);
+        console.log("Amount:", intent.amount);
 
-      if (email) {
-        await upsertProspect({ email });
+        if (email) {
+          await persistProspect({ email });
+        }
+        break;
       }
-      break;
-    }
 
-    default:
-      console.log("Unhandled event type:", event.type);
+      default:
+        console.log("Unhandled event type:", event.type);
+    }
+  } catch (error) {
+    console.error("Stripe webhook processing failed; Stripe should retry:", error);
+    return NextResponse.json(
+      { error: "Webhook processing failed; retryable" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ received: true });
