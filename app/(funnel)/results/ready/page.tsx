@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const STRIPE_URL = "https://buy.stripe.com/00wdR8h1F0rT8wCdvLaVa00";
+import { AUDIT_PRICE, AUDIT_STRIPE_URL } from "@/lib/pricing";
 
 interface VerdicData {
   score: number;
@@ -131,7 +131,7 @@ export default function ReadyPage() {
             onClick={() => setShowDisclosure(true)}
             className="btn-primary results-cta"
           >
-            Unlock Your Funding Roadmap — $350
+            Unlock Your Funding Roadmap — ${AUDIT_PRICE}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
@@ -154,7 +154,7 @@ export default function ReadyPage() {
               
               <p><strong>Engagement:</strong> By proceeding, you are purchasing a digital educational product (The Funding Roadmap) and a one-time license for the Capital Architect MCP Dashboard. This is not a "guaranteed funding" service or a credit repair service as defined by CROA.</p>
               
-              <p><strong>Terms:</strong> Your $350 payment is for immediate access to these digital assets. No recurring fees will be charged. You have a 3-day right to cancel this agreement following purchase for a full refund, provided no digital assets have been downloaded.</p>
+              <p><strong>Terms:</strong> Your ${AUDIT_PRICE} payment is for immediate access to these digital assets. No recurring fees will be charged. You have a 3-day right to cancel this agreement following purchase for a full refund, provided no digital assets have been downloaded.</p>
             </div>
             
             <div className="disclosure-consent">
@@ -176,7 +176,7 @@ export default function ReadyPage() {
                 Go Back
               </button>
               <a
-                href={hasConsented ? STRIPE_URL : "#"}
+                href={hasConsented ? AUDIT_STRIPE_URL : "#"}
                 className={`btn-primary ${!hasConsented ? 'btn-disabled' : ''}`}
                 target={hasConsented ? "_blank" : undefined}
                 rel="noopener noreferrer"

@@ -5,28 +5,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-03-25.dahlia",
 });
 
-// In-memory paid users store
-// TODO: Replace with Supabase/database in production
-const paidUsers = new Set<string>();
-
-export { paidUsers };
-
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
-
-  // If no webhook secret configured, accept all completed checkout events
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  let event: Stripe.Event;
+  // Fail closed: a missing or invalid signature is never accepted.
+  if (!webhookSecret || !sig) {
+    return NextResponse.json(
+      { error: "Webhook secret not configured or signature missing" },
+      { status: 400 },
+    );
+  }
 
+  let event: Stripe.Event;
   try {
-    if (webhookSecret && sig) {
-      event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-    } else {
-      // Development mode — parse raw event
-      event = JSON.parse(body) as Stripe.Event;
-    }
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
@@ -44,13 +38,7 @@ export async function POST(req: NextRequest) {
       console.log("Amount:", session.amount_total);
       console.log("Payment ID:", session.payment_intent);
 
-      if (email) {
-        paidUsers.add(email.toLowerCase());
-        console.log("Paid user registered:", email);
-      }
-
-      // TODO: Update Supabase — set prospect.has_paid = true WHERE email = email
-      // TODO: Update Clerk user metadata with paid status
+      // TODO: Persist to Supabase (prospects table) — deferred (Gate 1)
       break;
     }
 
@@ -62,9 +50,7 @@ export async function POST(req: NextRequest) {
       console.log("Email:", email);
       console.log("Amount:", intent.amount);
 
-      if (email) {
-        paidUsers.add(email.toLowerCase());
-      }
+      // TODO: Persist to Supabase — deferred (Gate 1)
       break;
     }
 

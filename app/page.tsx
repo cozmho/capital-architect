@@ -1,3 +1,4 @@
+import { AUDIT_PRICE } from "@/lib/pricing";
 import ScrollEffects from "@/components/ScrollEffects";
 import LeadMagnetForm from "@/components/LeadMagnetForm";
 import NavClient from "@/components/NavClient";
@@ -120,7 +121,7 @@ export default function HomePage() {
       <div className="stats-bar">
         <div className="stats-bar-inner reveal">
           <div className="stat-item">
-            <div className="stat-number">$497</div>
+            <div className="stat-number">${AUDIT_PRICE}</div>
             <div className="stat-label">
               Fundability Audit — full diagnostic
             </div>
@@ -259,7 +260,7 @@ export default function HomePage() {
 
         <div className="service-cards">
           <div className="card reveal">
-            <span className="card-badge">Start Here · $497</span>
+            <span className="card-badge">Start Here · ${AUDIT_PRICE}</span>
             <h3>Fundability Audit</h3>
             <p>
               Not sure if you&apos;re ready for capital? Your Verdic™ score

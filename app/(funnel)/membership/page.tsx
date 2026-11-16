@@ -1,8 +1,7 @@
 "use client";
 
 import { useUser, SignInButton } from "@clerk/nextjs";
-
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/00wdR8h1F0rT8wCdvLaVa00";
+import { AUDIT_PRICE, AUDIT_STRIPE_URL } from "@/lib/pricing";
 
 export default function MembershipPage() {
   const { isSignedIn, user } = useUser();
@@ -23,7 +22,7 @@ export default function MembershipPage() {
       <div className="membership-card">
         <div className="membership-card-header">
           <div className="membership-price">
-            <span className="membership-amount">$350</span>
+            <span className="membership-amount">${AUDIT_PRICE}</span>
             <span className="membership-label">one-time</span>
           </div>
           <h2>Capital Architect Funding Roadmap</h2>
@@ -75,12 +74,12 @@ export default function MembershipPage() {
               dashboard access.
             </p>
             <a
-              href={STRIPE_PAYMENT_LINK}
-              className="btn-primary membership-cta"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Unlock Your Funding Roadmap — $350
+                          href={AUDIT_STRIPE_URL}
+                          className="btn-primary membership-cta"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Unlock Your Funding Roadmap — ${AUDIT_PRICE}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const STRIPE_URL = "https://buy.stripe.com/00wdR8h1F0rT8wCdvLaVa00";
+import { AUDIT_PRICE, AUDIT_STRIPE_URL } from "@/lib/pricing";
 
 interface VerdicData {
   score: number;
@@ -114,12 +114,12 @@ export default function PrepPage() {
             </svg>
           </a>
           <a
-            href={STRIPE_URL}
+            href={AUDIT_STRIPE_URL}
             className="btn-primary results-cta"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Unlock Your Funding Roadmap — $350
+            Unlock Your Funding Roadmap — ${AUDIT_PRICE}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
