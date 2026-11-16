@@ -1,36 +1,256 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Capital Architect
 
-## Getting Started
+Capital Architect is a credit compliance and funding portal built on Next.js App Router with Clerk auth and Prisma over Supabase Postgres.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 App Router
+- TypeScript + React 19
+- Clerk for auth and role-aware dashboard access
+- Prisma 7 + Supabase Postgres
+- Tailwind CSS v4 + Lucide React
+
+## Quick Start
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+1. Configure environment variables in `.env`:
+
+- `DATABASE_URL` (Supabase direct connection URL, port 5432; used by `lib/prisma.ts` during application runtime)
+- `DIRECT_URL` (Supabase direct connection URL for migrations; used by `prisma.config.ts` for schema operations only)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (Clerk publishable key for client-side auth; use `pk_test_*` for development, `pk_live_*` for production)
+- `CLERK_SECRET_KEY` (Clerk secret key for server-side auth; use `sk_test_*` for development, `sk_live_*` for production)
+- `INTAKE_API_KEY` (optional but recommended for external intake calls)
+- `GOD_MODE_USER_IDS` (optional; comma-separated Clerk user IDs granted admin/god-mode access override)
+- `NEXT_PUBLIC_MEMBERSHIP_CHECKOUT_URL` (optional; primary checkout action on `/membership`)
+- `NEXT_PUBLIC_TIER_B_STRIPE_URL` (optional; dedicated Tier B Stripe checkout used on `/assess/results/prep` and as membership checkout priority)
+- `NEXT_PUBLIC_MEMBERSHIP_BOOKING_URL` (optional; secondary booking action on `/membership`)
+- `NEXT_PUBLIC_REPAIR_KIT_URL` (optional; repair kit CTA on `/assess/results/repair`)
+- `NEXT_PUBLIC_MEMBERSHIP_CONTACT_EMAIL` (optional; fallback contact route, defaults to `support@capitalarchitect.tech`)
+
+**Database URL Notes:**
+- `DATABASE_URL`: Uses the Supabase connection pooler (port 6543) for high concurrency Server Actions (requires `?pgbouncer=true`)
+- `DIRECT_URL`: Uses the Supabase direct connection (port 5432) — required explicitly for Prisma CLI migration commands
+- Both point to the same database endpoint; the pooler on port 6543 is recommended for high concurrency Server Actions (standard Prisma connection pooler supports it natively with `?pgbouncer=true`).
+
+1. Start development:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Open <http://localhost:3000>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` starts the dev server
+- `npm run lint` runs ESLint
+- `npm run type-check` runs TypeScript checks without emitting files
+- `npm run prisma:generate` regenerates Prisma client types
+- `npm run build` builds production output
+- `npm run start` runs the production server
+- `npm run test:e2e` runs Playwright smoke tests
+- `npm run test:e2e:ui` runs Playwright in UI mode for local debugging
 
-## Learn More
+## Playwright Smoke Tests
 
-To learn more about Next.js, take a look at the following resources:
+This repository includes Playwright smoke tests for:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Assessment tier redirects (`/assess` -> `ready`, `prep`, `repair`)
+- Auth route availability (`/sign-in`, `/sign-up`)
+- Protected admin access behavior (`/dashboard/admin/scoring`) using Clerk test auth
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Local run
 
-## Deploy on Vercel
+1. Ensure app env vars are configured (`DATABASE_URL`, Clerk keys, etc.).
+2. Optionally set `CLERK_TESTING_TOKEN` to enable the admin-auth smoke test.
+3. Run:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run test:e2e
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+By default, Playwright starts a local dev server at `http://localhost:3000`. To run against an existing deployment, set `BASE_URL`.
+
+### GitHub Actions preview workflow
+
+Workflow: `.github/workflows/e2e-preview.yml`
+
+On each push and pull request, the workflow:
+
+1. Builds and deploys a preview using Vercel CLI.
+2. Sets `BASE_URL` to that preview deployment.
+3. Runs Playwright smoke tests against the deployed URL.
+
+Required GitHub secrets:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+- `CLERK_TESTING_TOKEN` (required to execute Clerk sign-in smoke test)
+- `TEST_USER_EMAIL` (email of the Clerk test user used by the smoke test)
+
+Optional GitHub variable:
+
+- `TEST_USER_IS_ADMIN` (`true` when the Clerk test identity should have admin access)
+
+## Project Layout
+
+- `app/` App Router routes and layouts
+- `app/api/intake/route.ts` intake endpoint with tiering and idempotent upsert
+- `app/actions/scoring.ts` institutional-grade scoring engine incorporating FICO, monthly revenue, and time in business
+- `app/dashboard/*` role-specific dashboard views
+- `middleware.ts` dashboard protection and role redirects
+- `lib/prisma.ts` Prisma runtime client singleton
+- `prisma/schema.prisma` core data models
+- `prisma.config.ts` Prisma CLI datasource resolution
+- `scripts/google-apps-script/intake-webhook.gs` Google Form bridge script
+
+## Auth And Routing
+
+Dashboard routes under `/dashboard/*` are protected in `middleware.ts`.
+
+- `/dashboard/god-mode` requires role `admin` (or user ID in `GOD_MODE_USER_IDS` env variable)
+- `/dashboard/closer` requires role `closer`
+- `/dashboard/setter` requires role `setter`
+- `/dashboard/client` requires paid membership status
+
+When Clerk keys are placeholders or missing, the app degrades gracefully instead of crashing.
+
+For owner access, `/dashboard/god-mode` accepts either role `admin` from Clerk metadata or a user ID listed in `GOD_MODE_USER_IDS`.
+
+## Vercel Social Connection (Production Setup)
+
+Clerk supports Sign In with Vercel so users can authenticate using their Vercel account. This is configured entirely within the Clerk Dashboard — no additional environment variables are required in the app.
+
+### Development instances
+
+Clerk provides shared OAuth credentials automatically. No extra configuration is needed:
+
+1. In the [Clerk Dashboard](https://dashboard.clerk.com/~/user-authentication/sso-connections), go to **SSO connections**.
+2. Select **Add connection → For all users → Vercel**.
+3. The connection is immediately active — Clerk uses preconfigured shared credentials so no Client ID or Secret is required.
+
+To verify, visit your Clerk Account Portal sign-in page at `https://your-domain.accounts.dev/sign-in` and confirm **Continue with Vercel** appears as a sign-in option.
+
+### Production instances
+
+Production instances require custom OAuth credentials from a dedicated Vercel app:
+
+1. **In the Clerk Dashboard** — Go to **SSO connections**, add a Vercel connection, enable **Use custom credentials**, and copy the **Authorization Callback URL**.
+2. **In your Vercel team settings** — Navigate to **Settings → Apps → Create**:
+   - Enter a name and slug for your app and select **Save**.
+   - Under **Authorization Callback URLs**, paste the URL from step 1.
+   - On the **Authentication** tab, select `client_secret_post` (recommended for server-side apps).
+   - On the **Permissions** tab, enable `openid`, `email`, `profile`, and `offline_access`.
+   - Select **Generate** to create a client secret. Save both the **Client ID** and **Client Secret** somewhere secure.
+3. **Back in the Clerk Dashboard** — Paste the Client ID and Client Secret into the connection form and save.
+
+Test by visiting your Clerk Account Portal sign-in page and signing in with Vercel. The URL format is `https://accounts.your-domain.com/sign-in` — replace `your-domain.com` with your Clerk frontend API domain, which is found in the Clerk Dashboard under **API Keys**.
+
+## Intake API
+
+Endpoint: `POST /api/intake`
+
+The endpoint:
+
+- Normalizes lead payload values
+- Assigns tier (`A`, `B`, `C`, or `CHECK_MANUALLY`)
+- Resolves intake source (`website`, `google`, `calendly`, `unknown`)
+- Upserts into Prisma using a stable deterministic lead id
+
+### Sample Payload
+
+```json
+{
+  "leadName": "Acme Holdings",
+  "ficoBand": "720+",
+  "utilizationBand": "31-50%",
+  "bankruptcy": "No",
+  "recentLates": "No",
+  "sourceLeadId": "2026-03-27T20:00:00Z|Acme Holdings"
+}
+```
+
+### Local Intake Verification
+
+1. Run the app: `npm run dev`
+2. Send a request:
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:3000/api/intake" -Method Post -Headers @{"x-intake-key"="caparch_intake_local_2026"} -ContentType "application/json" -Body '{"leadName":"Test Capital LLC","ficoBand":"720+","utilizationBand":"31-50%","bankruptcy":"No","recentLates":"No","sourceLeadId":"local-test-1"}'
+```
+
+1. Confirm the lead appears in `/dashboard/god-mode`
+
+## Build Inconsistency Sweep
+
+Use this order when auditing build inconsistencies:
+
+1. Check workflow script and config drift.
+
+`package.json` scripts should match `dev`, `lint`, `build`, and `start`.
+`tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs`, and `prisma.config.ts` should not conflict.
+
+1. Run verification commands.
+
+```bash
+npm run lint
+npm run type-check
+npm run build
+```
+
+1. Classify findings only after command evidence.
+
+Build-breaking means a command fails.
+Risky inconsistency means checks pass now but likely drift in CI or cross-environment execution.
+Documentation drift means docs do not match behavior.
+
+## Notes
+
+- This repository uses `middleware.ts` for route protection (standard Next.js convention).
+- Keep `.env` uncommitted and `.env.example` safe for sharing.
+
+## Membership CTA Event Tracking
+
+The `/membership` page emits click events for conversion CTAs. If `gtag` and/or `dataLayer` are present, events are sent with the names below.
+
+| Event Name | Trigger | Destination Example |
+| --- | --- | --- |
+| `membership_checkout_click` | User clicks the checkout CTA | `https://checkout.example.com/capital-architect` |
+| `membership_call_click` | User clicks the booking/call CTA | `https://calendly.com/example/capital-architect-membership` |
+| `membership_contact_click` | User clicks a membership contact email CTA | `mailto:support@capitalarchitect.tech?subject=Capital%20Architect%20Membership` |
+
+Shared event parameters:
+
+- `destination`: outbound URL or mailto destination
+- `channel`: always `membership`
+
+## Recommended Branch Protection
+
+For `main`, enable branch protection and require:
+
+- Required status checks: `verify`, `CodeQL Analysis`, `npm Audit (high+)`
+- Pull request before merge
+- At least 1 approving review
+- Dismiss stale approvals when new commits are pushed
+- Block force pushes and branch deletion
+
+## Release Checklist (Maintainers)
+
+Use this flow when preparing a production release:
+
+1. Ensure required CI checks are passing on `main` (`verify`, `CodeQL Analysis`, `npm Audit (high+)`).
+2. Confirm PR labels are accurate (`auth`, `prisma`, `frontend`, `ci`, `docs`, `security`).
+3. If needed, apply version hint labels on PRs (`major`, `minor`, or `patch`).
+4. Open the latest draft release generated by `.github/workflows/release-drafter.yml`.
+5. Review category grouping and remove internal-only changes if needed.
+6. Publish the draft release with final title and notes.
+
+Optional:
+
+- Add `skip-changelog` to PRs that should be excluded from release notes.

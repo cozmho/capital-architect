@@ -20,6 +20,7 @@ export default function ReadyPage() {
   useEffect(() => {
     const stored = sessionStorage.getItem("verdicResult");
     if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setData(JSON.parse(stored));
     }
   }, []);
@@ -142,6 +143,14 @@ export default function ReadyPage() {
           Includes your personalized funding roadmap, capital stack sequencing,
           lender-ready positioning, and full dashboard access.
         </p>
+
+        <p className="results-disclaimer">
+          Verdic™ is an educational fundability assessment, not a credit report or a guarantee of
+          approval. Capital products, terms, and timelines vary by lender, business profile, and
+          market conditions. Past outcomes shown are representative examples, not promises of
+          specific results. You are never required to purchase any service to exercise your credit
+          rights.
+        </p>
       </div>
 
       {/* CROA Disclosure Modal */}
@@ -152,7 +161,7 @@ export default function ReadyPage() {
             <div className="disclosure-scroll">
               <p><strong>Consumer Disclosure:</strong> You have the right to dispute inaccurate information in your credit report by contacting the credit bureau directly. You are not required to purchase any credit repair services or software to execute these rights. Information on how to do this for free is provided at consumerfinance.gov.</p>
               
-              <p><strong>Engagement:</strong> By proceeding, you are purchasing a digital educational product (The Funding Roadmap) and a one-time license for the Capital Architect MCP Dashboard. This is not a "guaranteed funding" service or a credit repair service as defined by CROA.</p>
+              <p><strong>Engagement:</strong> By proceeding, you are purchasing a digital educational product (The Funding Roadmap) and a one-time license for the Capital Architect MCP Dashboard. This is not a &quot;guaranteed funding&quot; service or a credit repair service as defined by CROA.</p>
               
               <p><strong>Terms:</strong> Your ${AUDIT_PRICE} payment is for immediate access to these digital assets. No recurring fees will be charged. You have a 3-day right to cancel this agreement following purchase for a full refund, provided no digital assets have been downloaded.</p>
             </div>

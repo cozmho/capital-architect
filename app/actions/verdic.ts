@@ -6,11 +6,13 @@
 // This file runs EXCLUSIVELY on the server. The scoring weights, tier
 // thresholds, and underwriting logic NEVER ship to the browser.
 //
-// The client sends form data → the server does the math → the server
-// returns the tier. That's it.
-//
-// TODO: Wire to Supabase to persist prospect data and scores
+// All prospect submissions are immediately saved to the Postgres database.
 // ============================================================================
+
+import { getPrismaClient } from "@/lib/prisma";
+import { sendAssessmentCompleteEmail, sendAdminNewLeadAlert } from "./emails";
+
+const prisma = getPrismaClient();
 
 // ---------------------------------------------------------------------------
 // BUSINESS PATH — Full intake
@@ -97,6 +99,7 @@ export interface VerdicResult {
   route: "ready" | "prep" | "repair" | "prelaunch";
   hasMetro2Errors: boolean;
   path: "business" | "pre-business";
+  leadId?: string;
   complianceItems?: { id: string; label: string; status: "pass" | "fail" | "pending"; description: string }[];
 }
 
@@ -106,22 +109,55 @@ export interface VerdicResult {
 export async function calculateVerdicScore(
   formData: IntakeFormData
 ): Promise<VerdicResult> {
-  // -----------------------------------------------------------------
-  // Log prospect data
-  // TODO: wire to Supabase — INSERT into prospects table
-  // -----------------------------------------------------------------
-  console.log("=== NEW INTAKE SUBMISSION ===");
-  console.log("Path:", formData.path);
-  console.log("Name:", formData.fullName);
-  console.log("Email:", formData.email);
-  console.log("Timestamp:", new Date().toISOString());
-  console.log("Full data:", JSON.stringify(formData, null, 2));
+  const result = formData.path === "business"
+    ? scoreBusinessPath(formData)
+    : scorePreBusinessPath(formData);
 
-  if (formData.path === "business") {
-    return scoreBusinessPath(formData);
-  } else {
-    return scorePreBusinessPath(formData);
+  let leadId: string | undefined;
+
+  try {
+    const lead = await prisma.lead.create({
+      data: {
+        path: formData.path,
+        ownerName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone || null,
+        businessName: (formData as BusinessFormData).businessName || "Pre-Business",
+        fundabilityScore: result.score,
+        tier: result.tier,
+        hasMetro2Errors: result.hasMetro2Errors,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Json field accepts any serializable value
+        rawInput: formData as any,
+        status: "VERDIC_SCORED",
+        source: "verdic_intake",
+      },
+    });
+    leadId = lead.id;
+  } catch (error) {
+    console.error("Database Error: Failed to save lead.", error);
   }
+
+  // Fire emails asynchronously — never block the scoring response
+  try {
+    await sendAssessmentCompleteEmail(
+      formData.email,
+      formData.fullName,
+      result.score,
+      result.tier,
+      result.route
+    );
+    await sendAdminNewLeadAlert({
+      name: formData.fullName,
+      email: formData.email,
+      score: result.score,
+      tier: result.tier,
+      path: formData.path,
+    });
+  } catch (emailError) {
+    console.error("Post-scoring email error (non-blocking):", emailError);
+  }
+
+  return { ...result, leadId };
 }
 
 // ============================================================================
@@ -243,7 +279,6 @@ function scoreBusinessPath(data: BusinessFormData): VerdicResult {
   // --- Business Taxes ---
   if (data.hasFiledBusinessTaxes === "yes") score += 6;
   else if (data.hasFiledBusinessTaxes === "no") score -= 5;
-  // "not-applicable" = no change
 
   // --- Open Business Loans ---
   if (data.hasOpenBusinessLoans === "yes") score += 2;
@@ -273,15 +308,13 @@ function scoreBusinessPath(data: BusinessFormData): VerdicResult {
   }
 
   // MCP-20 Compliance Checks
-  const complianceItems: { id: string; label: string; status: "pass" | "fail" | "pending"; description: string }[] = [
+  const complianceItems: VerdicResult["complianceItems"] = [
     { id: "ein", label: "Tax ID (EIN)", status: data.hasEIN === "yes" ? "pass" : "fail", description: "Business EIN registration" },
     { id: "bank", label: "Business Bank", status: data.hasBusinessBank === "yes" ? "pass" : "fail", description: "Dedicated commercial banking" },
     { id: "address", label: "Business Address", status: data.addressType === "commercial" || data.addressType === "virtual-office" ? "pass" : "fail", description: "Professional address requirement" },
     { id: "duns", label: "D-U-N-S Number", status: data.hasDUNS === "yes" ? "pass" : "fail", description: "Registration with D&B" },
     { id: "taxes", label: "Business Taxes", status: data.hasFiledBusinessTaxes === "yes" ? "pass" : "fail", description: "Tax compliance standing" },
   ];
-
-  console.log(`=== VERDIC RESULT [BUSINESS]: Score=${score}, Tier=${tier} ===`);
 
   return { score, tier, route, hasMetro2Errors, path: "business", complianceItems };
 }
@@ -366,10 +399,8 @@ function scorePreBusinessPath(data: PreBusinessFormData): VerdicResult {
   } else if (score >= 55) {
     tier = "B"; route = "prep";
   } else {
-    tier = "C"; route = "prelaunch"; // Different page for pre-business
+    tier = "C"; route = "prelaunch";
   }
-
-  console.log(`=== VERDIC RESULT [PRE-BUSINESS]: Score=${score}, Tier=${tier} ===`);
 
   return { score, tier, route, hasMetro2Errors, path: "pre-business", complianceItems: [] };
 }

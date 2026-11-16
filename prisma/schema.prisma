@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id // Clerk User ID (user_...)
+  email     String   @unique
+  role      String   @default("SETTER")
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id              String   @id @default(cuid())
+  businessName    String
+  ownerName       String?
+  email           String?
+  phone           String?
+  
+  // Financial Profile
+  ficoScore       Int?
+  monthlyRevenue  Int?
+  timeInBusiness  Int?     // months
+  
+  // Tier & Status
+  tier            String   @default("B")  // A, B, C, CHECK_MANUALLY
+  status          String   @default("PENDING_DOCS")
+  tags            String[] @default([])
+  
+  // Tracking Fields
+  adb             Int      @default(0)
+  nsfs            Int      @default(0)
+  source          String   @default("website")
+  notes           String?
+  
+  // Compliance Engine Fields
+  metro2ErrorCount       Int?
+  hasIdentityTheftBlock  Boolean?
+  complianceStatus       String?
+  
+  // Underwriting Engine Fields
+  chase524Count    Int?
+  recentInquiries  Int?
+  entityType       String?
+  
+  // Master Fundability Score
+  fundabilityScore Int?
+
+  // Verdic Engine Fields
+  path            String?   // "business" | "pre-business"
+  rawInput        Json?     // Full intake form answers for audit trail
+  hasMetro2Errors Boolean?  // Explicit boolean from Verdic scoring
+
+  // Payment Fields
+  paidAmount       Int?       // Amount in cents
+  paidAt           DateTime?
+  stripeSessionId  String?    @unique
+  stripeCustomerId String?
+  paymentStatus    String?    // "pending" | "paid" | "failed" | "refunded"
+
+  // Follow-up Automation
+  followUpSentAt DateTime?
+  followUpCount  Int        @default(0)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+  lastContactedAt DateTime?
+
+  @@index([email])
+  @@index([tier])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([followUpSentAt])
+}
+
+model AgentRun {
+  id          String      @id @default(cuid())
+  objective   String
+  status      RunStatus   @default(PENDING)
+  costEstimate Float      @default(0)
+  totalTokens Int         @default(0)
+  tasks       AgentTask[]
+  logs        AgentTaskLog[]
+  createdAt   DateTime    @default(now())
+  completedAt DateTime?
+}
+
+model AgentTask {
+  id          String     @id @default(cuid())
+  runId       String
+  run         AgentRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  agentName   String
+  model       String
+  description String?
+  input       Json
+  output      Json?
+  status      TaskStatus @default(PENDING)
+  retryCount  Int        @default(0)
+  error       String?
+  tokensUsed  Int        @default(0)
+  order       Int        @default(0)
+  dependsOn   String?
+  createdAt   DateTime   @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+}
+
+model AgentTaskLog {
+  id        String   @id @default(cuid())
+  runId     String
+  run       AgentRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  taskId    String?
+  message   String
+  level     LogLevel @default(INFO)
+  createdAt DateTime  @default(now())
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum TaskStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  APPROVAL_REQUIRED
+}
+
+enum LogLevel {
+  INFO
+  DEBUG
+  WARN
+  ERROR
+}
+
+enum ClientStage {
+  ACTIVE_LOAN_HOLD
+  ROUND_1_STAGED
+  ROUND_2_READY
+  WARM_FUNDING_CHECK
+  WARM_ROUND_2
+  WARM_FOLLOWUP
+  WARM_REACTIVATION
+}
+
+
+model Client {
+  id                 String        @id @default(cuid())
+  name               String
+  phone              String?
+  email              String?
+  ficoScore          Int?
+  stage              ClientStage   @default(WARM_FOLLOWUP)
+  notes              String?
+  holdDisputes       Boolean       @default(false)
+  attorneySettlement Boolean       @default(false)
+  activityLog        Json          @default("[]")
+  documents          Json          @default("[]")
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @default(now()) @updatedAt
+
+  @@index([stage])
+  @@index([email])
+}

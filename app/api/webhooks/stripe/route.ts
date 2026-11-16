@@ -1,109 +1,164 @@
-import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
-import { upsertProspect } from "@/lib/supabase";
+import { NextResponse } from "next/server";
+import { getStripe } from "@/lib/stripe";
+import { getPrismaClient } from "@/lib/prisma";
+import { headers } from "next/headers";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-03-25.dahlia",
-});
+export const dynamic = "force-dynamic";
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-
-async function sendConfirmation(email: string, name?: string | null) {
-  if (!RESEND_API_KEY) return;
-  try {
-    const res = await fetch("https://api.resend.dev/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Capital Architect <noreply@capitalarchitect.tech>",
-        to: email,
-        subject: "Your Fundability Audit is Complete",
-        html: `<p>Hi ${name || "there"},</p><p>Your payment has been received. Your audit report will be ready shortly.</p>`,
-      }),
-    });
-    if (!res.ok) console.error("Resend error:", await res.text());
-  } catch (e) {
-    console.error("Email send error:", e);
-  }
-}
-
-async function persistProspect(prospect: Parameters<typeof upsertProspect>[0]) {
-  try {
-    await upsertProspect(prospect);
-  } catch (error) {
-    console.error("Supabase prospect persistence failed:", error);
-    throw error;
-  }
-}
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const signature = (await headers()).get("stripe-signature") as string;
 
-  // Fail closed: a missing or invalid signature is never accepted.
-  if (!webhookSecret || !sig) {
-    return NextResponse.json(
-      { error: "Webhook secret not configured or signature missing" },
-      { status: 400 },
-    );
+  let event: any;
+  const stripe = getStripe();
+  if (!stripe) {
+    return new NextResponse("Stripe not configured", { status: 503 });
   }
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err);
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
-  }
-
-  try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const email = session.customer_details?.email;
-        const customerName = session.customer_details?.name;
-
-        console.log("=== PAYMENT RECEIVED ===");
-        console.log("Email:", email);
-        console.log("Name:", customerName);
-        console.log("Amount:", session.amount_total);
-        console.log("Payment ID:", session.payment_intent);
-
-        if (email) {
-          await persistProspect({ email, name: customerName });
-          await sendConfirmation(email, customerName);
-        }
-        break;
-      }
-
-      case "payment_intent.succeeded": {
-        const intent = event.data.object as Stripe.PaymentIntent;
-        const email = intent.receipt_email;
-
-        console.log("=== PAYMENT INTENT SUCCEEDED ===");
-        console.log("Email:", email);
-        console.log("Amount:", intent.amount);
-
-        if (email) {
-          await persistProspect({ email });
-        }
-        break;
-      }
-
-      default:
-        console.log("Unhandled event type:", event.type);
-    }
-  } catch (error) {
-    console.error("Stripe webhook processing failed; Stripe should retry:", error);
-    return NextResponse.json(
-      { error: "Webhook processing failed; retryable" },
-      { status: 500 },
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
     );
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    console.error(`Webhook signature verification failed: ${msg}`);
+    return new NextResponse(`Webhook Error: ${msg}`, { status: 400 });
   }
 
-  return NextResponse.json({ received: true });
+  const session = event.data.object as any;
+
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const customerEmail = session.customer_details?.email;
+      const metadata = session.metadata;
+      const leadId = metadata?.leadId;
+
+      if (!customerEmail && !leadId) break;
+
+      let prisma: ReturnType<typeof getPrismaClient> | null = null;
+      try {
+        prisma = getPrismaClient();
+      } catch {
+        return new NextResponse("Database not configured", { status: 503 });
+      }
+
+      try {
+        const lead = leadId
+          ? await prisma.lead.findUnique({ where: { id: leadId } })
+          : await prisma.lead.findFirst({
+              where: { email: customerEmail },
+              orderBy: { createdAt: "desc" },
+            });
+
+        const productType = metadata?.productType || "roadmap";
+        const statusMap: Record<string, string> = {
+          intensive: "PAID_INTENSIVE",
+          roadmap: "PAID_ROADMAP",
+          repair_kit: "PAID_REPAIR_KIT",
+        };
+
+        if (lead) {
+          if (lead.stripeSessionId === session.id) break;
+
+          await prisma.lead.update({
+            where: { id: lead.id },
+            data: {
+              paymentStatus: "paid",
+              paidAmount: session.amount_total,
+              paidAt: new Date(),
+              stripeSessionId: session.id,
+              stripeCustomerId: session.customer || null,
+              status: statusMap[productType] || "PAID_READY_INTENSIVE",
+              notes: (lead.notes ?? "") + `\n[Stripe] Payment received for ${productType}. Session: ${session.id}`,
+            },
+          });
+        } else {
+          await prisma.lead.create({
+            data: {
+              email: customerEmail,
+              businessName: metadata?.businessName || "TBD",
+              ownerName: session.customer_details?.name || "TBD",
+              status: statusMap[productType] || "PAID_READY_INTENSIVE",
+              paymentStatus: "paid",
+              paidAmount: session.amount_total,
+              paidAt: new Date(),
+              stripeSessionId: session.id,
+              stripeCustomerId: session.customer || null,
+              tier: metadata?.tier || "B",
+              source: "stripe_checkout",
+              notes: `[Stripe] New lead created from payment. Session: ${session.id}`,
+            },
+          });
+        }
+      } catch (dbError) {
+        console.error("Database update failed during webhook:", dbError);
+        return new NextResponse("Database Error", { status: 500 });
+      }
+      break;
+    }
+
+    case "payment_intent.payment_failed": {
+      const failedIntent = event.data.object as any;
+      const failEmail = failedIntent.receipt_email || failedIntent.last_payment_error?.payment_method?.billing_details?.email;
+      const failReason = failedIntent.last_payment_error?.message || "Unknown failure";
+
+      if (failEmail) {
+        let prisma: ReturnType<typeof getPrismaClient> | null = null;
+        try { prisma = getPrismaClient(); } catch { return new NextResponse("Database not configured", { status: 503 }); }
+        try {
+          const lead = await prisma.lead.findFirst({
+            where: { email: failEmail },
+            orderBy: { createdAt: "desc" },
+          });
+          if (lead) {
+            await prisma.lead.update({
+              where: { id: lead.id },
+              data: {
+                paymentStatus: "failed",
+                notes: (lead.notes ?? "") + `\n[Stripe] Payment failed: ${failReason}`,
+              },
+            });
+          }
+        } catch (dbError) {
+          console.error("DB update failed for payment_intent.payment_failed:", dbError);
+        }
+      }
+      break;
+    }
+
+    case "charge.refunded": {
+      const refundedCharge = event.data.object as any;
+      const refundEmail = refundedCharge.billing_details?.email || refundedCharge.receipt_email;
+
+      if (refundEmail) {
+        let prisma: ReturnType<typeof getPrismaClient> | null = null;
+        try { prisma = getPrismaClient(); } catch { return new NextResponse("Database not configured", { status: 503 }); }
+        try {
+          const lead = await prisma.lead.findFirst({
+            where: { email: refundEmail, paymentStatus: "paid" },
+            orderBy: { createdAt: "desc" },
+          });
+          if (lead) {
+            await prisma.lead.update({
+              where: { id: lead.id },
+              data: {
+                paymentStatus: "refunded",
+                status: "REFUNDED",
+                notes: (lead.notes ?? "") + `\n[Stripe] Refund processed. Charge: ${refundedCharge.id}`,
+              },
+            });
+          }
+        } catch (dbError) {
+          console.error("DB update failed for charge.refunded:", dbError);
+        }
+      }
+
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+
+  return new NextResponse("Success", { status: 200 });
 }

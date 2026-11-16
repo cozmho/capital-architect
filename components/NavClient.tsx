@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 function TriangleLogo() {
   return (
@@ -59,12 +60,12 @@ export default function NavClient() {
   return (
     <>
       <nav className="nav">
-        <a href="/" className="nav-logo">
+        <Link href="/" className="nav-logo">
           <div className="nav-logo-mark">
             <TriangleLogo />
           </div>
           <span className="nav-brand">Capital Architect</span>
-        </a>
+        </Link>
 
         <ul className="nav-links">
           <li>

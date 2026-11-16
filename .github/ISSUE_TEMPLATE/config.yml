@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Build Audit Prompt
+    url: https://github.com/cozmho/capital-architect/blob/main/.github/prompts/build-audit.prompt.md
+    about: Use the build-audit prompt before filing build inconsistency issues.
+  - name: Contributor Guide
+    url: https://github.com/cozmho/capital-architect/blob/main/CONTRIBUTING.md
+    about: Review contribution requirements and local verification workflow.

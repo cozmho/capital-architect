@@ -18,6 +18,7 @@ export default function RepairPage() {
   useEffect(() => {
     const stored = sessionStorage.getItem("verdicResult");
     if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setData(JSON.parse(stored));
     }
   }, []);
@@ -147,6 +148,13 @@ export default function RepairPage() {
           entity setup guide, milestone timeline, and full dashboard access.
         </p>
       </div>
+      <p className="results-disclaimer">
+        Verdic™ is an educational fundability assessment, not a credit report or a guarantee of
+        approval. Capital products, terms, and timelines vary by lender, business profile, and
+        market conditions. Past outcomes shown are representative examples, not promises of
+        specific results. You are never required to purchase any service to exercise your credit
+        rights.
+      </p>
     </div>
   );
 }

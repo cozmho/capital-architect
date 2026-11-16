@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"chat.agent.maxRequests": 10000000000000,
+		"chat.tools.terminal.sandbox.network.allowTrustedDomains": true,
+		"chat.tools.terminal.autoReplyToPrompts": true,
+		"chat.agent.sandbox": true
+	}
+}

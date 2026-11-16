@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build
+        run: npm run build
+
+      - name: Production smoke check
+        env:
+          PORT: 3000
+        run: |
+          npm run start > /tmp/next-start.log 2>&1 &
+          SERVER_PID=$!
+
+          cleanup() {
+            kill "$SERVER_PID" || true
+          }
+          trap cleanup EXIT
+
+          for i in {1..30}; do
+            if curl -sS "http://127.0.0.1:3000/" > /dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+          curl -fsS "http://127.0.0.1:3000/" > /dev/null
+
+          health_status=$(curl -sS -o /dev/null -w "%{http_code}" \
+            "http://127.0.0.1:3000/api/health")
+
+          if [ "$health_status" != "200" ]; then
+            echo "Expected /api/health smoke status 200, got $health_status"
+            exit 1
+          fi
