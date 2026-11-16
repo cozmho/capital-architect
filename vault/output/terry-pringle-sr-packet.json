@@ -1,0 +1,33 @@
+{
+  "client": "terry-pringle-sr",
+  "created": "2026-11-16T03:51:05.191Z",
+  "kyc": [
+    "id.pdf",
+    "bill.pdf"
+  ],
+  "sources": [
+    {
+      "filename": "equifax-*1876.pdf",
+      "pages": [
+        4,
+        37
+      ],
+      "target": "TBOM/FORTIVA",
+      "alias": "PERRY PRINGLE"
+    },
+    {
+      "filename": "765650200675****.pdf",
+      "pages": [
+        1,
+        3
+      ],
+      "target": "TBOM/FORTIVA",
+      "alias": "PERRY PRINGLE"
+    }
+  ],
+  "citations": {
+    "equifax": "\n[§1681i(a)(1) - 30-day dispute response window]\nSource: Equifax · File: Equifax.pdf · Page: 4, 37\nDate pulled: 2026-11-16\n",
+    "transunion": "\n[§1681i(a)(1) - 30-day dispute response window]\nSource: TransUnion · File: TransUnion.pdf · Page: 1, 3\nDate pulled: 2026-11-16\n"
+  },
+  "nextStep": "Verify attorney setoff items - stage Letter of Intent"
+}
