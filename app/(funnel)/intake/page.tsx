@@ -215,16 +215,25 @@ export default function IntakePage() {
       const result = await calculateVerdicScore(formData);
 
       sessionStorage.setItem(
-        "verdicResult",
-        JSON.stringify({
-          score: result.score,
-          tier: result.tier,
-          hasMetro2Errors: result.hasMetro2Errors,
-          path: result.path,
-          fullName: path === "business" ? bizForm.fullName : preForm.fullName,
-          businessName: path === "business" ? bizForm.businessName : "",
-        })
-      );
+                    "verdicResult",
+                    JSON.stringify({
+                      score: result.score,
+                      tier: result.tier,
+                      hasMetro2Errors: result.hasMetro2Errors,
+                      path: result.path,
+                      fullName: path === "business" ? bizForm.fullName : preForm.fullName,
+                      businessName: path === "business" ? bizForm.businessName : "",
+                      email: path === "business" ? bizForm.email : preForm.email,
+                      leadId: result.leadId,
+                    })
+                  );
+
+            // Cookie-based persistence for leadId (survives page refresh)
+            if (typeof document !== "undefined" && result.leadId) {
+              const expires = new Date();
+              expires.setFullYear(expires.getFullYear() + 1);
+              document.cookie = `leadId=${result.leadId}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+            }
 
       router.push(`/results/${result.route}`);
     } catch (error) {

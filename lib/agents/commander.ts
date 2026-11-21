@@ -1,7 +1,7 @@
 import { TaskPlanSchema, type TaskPlan, type Subtask } from "./schemas";
-import { callGemini, extractJson, executeWithRetry, getApiKey } from "./gemini";
+import { callGemini, extractJson, executeWithRetry } from "./gemini";
+import { DEFAULT_MODEL } from "../ai/client";
 
-const DEFAULT_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-3-flash-preview";
 
 function buildSystemPrompt(schemaDescription: string): string {
   return `You are a task planning assistant for the Capital Architect multi-agent system.

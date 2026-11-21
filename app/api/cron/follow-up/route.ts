@@ -11,9 +11,6 @@ export async function GET(req: Request) {
   }
 
   const prisma = getPrismaClient();
-  if (!prisma) {
-    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
-  }
 
   const now = new Date();
   const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);

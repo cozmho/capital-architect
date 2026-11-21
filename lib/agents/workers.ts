@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { callGemini, extractJson, executeWithRetry } from "./gemini";
+import { wordCount } from "../text-utils";
 import {
   ResearcherInputSchema,
   CopywriterInputSchema,
@@ -16,7 +17,7 @@ type ResearcherOutput = z.infer<typeof ResearcherOutputSchema>;
 type CopywriterOutput = z.infer<typeof CopywriterOutputSchema>;
 type ComplianceOutput = z.infer<typeof ComplianceOutputSchema>;
 
-const DEFAULT_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-3-flash-preview";
+import { DEFAULT_MODEL } from "../ai/client";
 
 // ─── Shared helpers ────────────────────────────────────────────────────────
 
@@ -125,7 +126,7 @@ export async function copywriterWorker(
   const userPrompt = buildCopywriterPrompt(input);
   const raw = await execute(userPrompt, COPYWRITER_OUTPUT_SCHEMA, model);
   const parsed = CopywriterOutputSchema.parse(JSON.parse(raw));
-  parsed.wordCount = parsed.content.split(/\s+/).filter(Boolean).length;
+  parsed.wordCount = wordCount(parsed.content);
   return parsed;
 }
 

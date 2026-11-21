@@ -1,12 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
+import { DEFAULT_MODEL } from "../ai/client";
 
-const DEFAULT_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-3-flash-preview";
 const API_TIMEOUT_MS = 15000;
 
-export function getApiKey(): string {
+let aiInstance: GoogleGenAI | null = null;
+
+function getAi(): GoogleGenAI {
+  if (aiInstance) return aiInstance;
   const key = process.env.GEMINI_API_KEY?.trim();
   if (!key) throw new Error("GEMINI_API_KEY is not configured");
-  return key;
+  aiInstance = new GoogleGenAI({ apiKey: key });
+  return aiInstance;
 }
 
 export async function callGemini(
@@ -15,8 +19,7 @@ export async function callGemini(
   model: string = DEFAULT_MODEL,
   maxTokens = 4096,
 ): Promise<string> {
-  const apiKey = getApiKey();
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = getAi();
 
   const responsePromise = ai.models.generateContent({
     model,

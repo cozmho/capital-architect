@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 
-const PRODUCTS: Record<string, { name: string; amount: number; description: string }> = {
+export const PRODUCTS: Record<string, { name: string; amount: number; description: string }> = {
   intensive: {
     name: "Funding Readiness Intensive",
     amount: 150000, // $1,500
     description: "14-day program: entity setup, credit positioning, and underwriting prep",
+  },
+  audit: {
+    name: "Fundability Audit",
+    amount: 49700, // $497
+    description: "Exact lender order map so you don't burn inquiries on wrong applications",
   },
   roadmap: {
     name: "Funding Roadmap",
@@ -19,7 +24,7 @@ const PRODUCTS: Record<string, { name: string; amount: number; description: stri
   },
 };
 
-const TIER_ROUTES: Record<string, string> = {
+export const TIER_ROUTES: Record<string, string> = {
   A: "ready",
   B: "prep",
   C: "repair",
@@ -27,11 +32,31 @@ const TIER_ROUTES: Record<string, string> = {
 
 export async function POST(req: Request) {
   try {
-    const { email, leadId, tier, productType } = await req.json();
+    const contentType = req.headers.get("content-type") || "";
 
-    if (!email || !productType) {
+    let email: string | undefined;
+    let leadId: string | undefined;
+    let tier: string | undefined;
+    let productType: string | undefined;
+
+    if (contentType.includes("application/json")) {
+      const body = await req.json();
+      email = body.email;
+      leadId = body.leadId;
+      tier = body.tier;
+      productType = body.productType;
+    } else if (contentType.includes("application/x-www-form-urlencoded")) {
+      const formBody = await req.text();
+      const params = new URLSearchParams(formBody);
+      email = params.get("email") || undefined;
+      leadId = params.get("leadId") || undefined;
+      tier = params.get("tier") || undefined;
+      productType = params.get("productType") || undefined;
+    }
+
+    if (!productType) {
       return NextResponse.json(
-        { error: "Missing required fields: email, productType" },
+        { error: "Missing required fields: productType" },
         { status: 400 }
       );
     }
@@ -45,7 +70,15 @@ export async function POST(req: Request) {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://capitalarchitect.tech";
-    const tierRoute = TIER_ROUTES[tier] || "prep";
+        const tierRoute = tier && TIER_ROUTES[tier] ? TIER_ROUTES[tier] : "prep";
+
+    const stripe = getStripe();
+    if (!stripe) {
+      return NextResponse.json(
+        { error: "Stripe not configured" },
+        { status: 503 }
+      );
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",

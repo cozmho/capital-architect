@@ -3,6 +3,15 @@ import { getStripe } from "@/lib/stripe";
 import { getPrismaClient } from "@/lib/prisma";
 import { headers } from "next/headers";
 
+/** Resolve the Prisma client or return a 503 response. */
+function requirePrisma(): { prisma: ReturnType<typeof getPrismaClient> } | NextResponse {
+  try {
+    return { prisma: getPrismaClient() };
+  } catch {
+    return new NextResponse("Database not configured", { status: 503 });
+  }
+}
+
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
@@ -37,65 +46,63 @@ export async function POST(req: Request) {
 
       if (!customerEmail && !leadId) break;
 
-      let prisma: ReturnType<typeof getPrismaClient> | null = null;
-      try {
-        prisma = getPrismaClient();
-      } catch {
-        return new NextResponse("Database not configured", { status: 503 });
-      }
+      const prismaResult = requirePrisma();
+            if (prismaResult instanceof NextResponse) return prismaResult;
+            const prisma = prismaResult.prisma;
 
-      try {
-        const lead = leadId
-          ? await prisma.lead.findUnique({ where: { id: leadId } })
-          : await prisma.lead.findFirst({
-              where: { email: customerEmail },
-              orderBy: { createdAt: "desc" },
-            });
+            try {
+                  const lead = leadId
+                    ? await prisma.lead.findUnique({ where: { id: leadId } })
+                    : await prisma.lead.findFirst({
+                        where: { email: customerEmail },
+                        orderBy: { createdAt: "desc" },
+                      });
 
-        const productType = metadata?.productType || "roadmap";
-        const statusMap: Record<string, string> = {
-          intensive: "PAID_INTENSIVE",
-          roadmap: "PAID_ROADMAP",
-          repair_kit: "PAID_REPAIR_KIT",
-        };
+                  const productType = metadata?.productType || "roadmap";
+                  const statusMap: Record<string, string> = {
+                    intensive: "PAID_INTENSIVE",
+                    audit: "PAID_AUDIT",
+                    roadmap: "PAID_ROADMAP",
+                    repair_kit: "PAID_REPAIR_KIT",
+                  };
 
-        if (lead) {
-          if (lead.stripeSessionId === session.id) break;
+                  if (lead) {
+                    if (lead.stripeSessionId === session.id) break;
 
-          await prisma.lead.update({
-            where: { id: lead.id },
-            data: {
-              paymentStatus: "paid",
-              paidAmount: session.amount_total,
-              paidAt: new Date(),
-              stripeSessionId: session.id,
-              stripeCustomerId: session.customer || null,
-              status: statusMap[productType] || "PAID_READY_INTENSIVE",
-              notes: (lead.notes ?? "") + `\n[Stripe] Payment received for ${productType}. Session: ${session.id}`,
-            },
-          });
-        } else {
-          await prisma.lead.create({
-            data: {
-              email: customerEmail,
-              businessName: metadata?.businessName || "TBD",
-              ownerName: session.customer_details?.name || "TBD",
-              status: statusMap[productType] || "PAID_READY_INTENSIVE",
-              paymentStatus: "paid",
-              paidAmount: session.amount_total,
-              paidAt: new Date(),
-              stripeSessionId: session.id,
-              stripeCustomerId: session.customer || null,
-              tier: metadata?.tier || "B",
-              source: "stripe_checkout",
-              notes: `[Stripe] New lead created from payment. Session: ${session.id}`,
-            },
-          });
-        }
-      } catch (dbError) {
-        console.error("Database update failed during webhook:", dbError);
-        return new NextResponse("Database Error", { status: 500 });
-      }
+                    await prisma.lead.update({
+                      where: { id: lead.id },
+                      data: {
+                        paymentStatus: "paid",
+                        paidAmount: session.amount_total,
+                        paidAt: new Date(),
+                        stripeSessionId: session.id,
+                        stripeCustomerId: session.customer || null,
+                        status: statusMap[productType] || "PAID_READY_INTENSIVE",
+                        notes: (lead.notes ?? "") + `\n[Stripe] Payment received for ${productType}. Session: ${session.id}`,
+                      },
+                    });
+                  } else {
+                    await prisma.lead.create({
+                      data: {
+                        email: customerEmail,
+                        businessName: metadata?.businessName || "TBD",
+                        ownerName: session.customer_details?.name || "TBD",
+                        status: statusMap[productType] || "PAID_READY_INTENSIVE",
+                        paymentStatus: "paid",
+                        paidAmount: session.amount_total,
+                        paidAt: new Date(),
+                        stripeSessionId: session.id,
+                        stripeCustomerId: session.customer || null,
+                        tier: metadata?.tier || "B",
+                        source: "stripe_checkout",
+                        notes: `[Stripe] New lead created from payment. Session: ${session.id}`,
+                      },
+                    });
+                  }
+                } catch (dbError) {
+                  console.error("Database update failed during webhook:", dbError);
+                  return new NextResponse("Database Error", { status: 500 });
+                }
       break;
     }
 
@@ -105,9 +112,10 @@ export async function POST(req: Request) {
       const failReason = failedIntent.last_payment_error?.message || "Unknown failure";
 
       if (failEmail) {
-        let prisma: ReturnType<typeof getPrismaClient> | null = null;
-        try { prisma = getPrismaClient(); } catch { return new NextResponse("Database not configured", { status: 503 }); }
-        try {
+              const prismaResult = requirePrisma();
+              if (prismaResult instanceof NextResponse) return prismaResult;
+              const prisma = prismaResult.prisma;
+              try {
           const lead = await prisma.lead.findFirst({
             where: { email: failEmail },
             orderBy: { createdAt: "desc" },
@@ -133,9 +141,10 @@ export async function POST(req: Request) {
       const refundEmail = refundedCharge.billing_details?.email || refundedCharge.receipt_email;
 
       if (refundEmail) {
-        let prisma: ReturnType<typeof getPrismaClient> | null = null;
-        try { prisma = getPrismaClient(); } catch { return new NextResponse("Database not configured", { status: 503 }); }
-        try {
+              const prismaResult = requirePrisma();
+              if (prismaResult instanceof NextResponse) return prismaResult;
+              const prisma = prismaResult.prisma;
+              try {
           const lead = await prisma.lead.findFirst({
             where: { email: refundEmail, paymentStatus: "paid" },
             orderBy: { createdAt: "desc" },

@@ -10,10 +10,12 @@ export function getResend() {
   return _resend;
 }
 
+type ResendKey = keyof Resend;
+
 export const resend = new Proxy({} as Resend, {
-  get(_, prop) {
+  get(_target, prop: ResendKey) {
     const r = getResend();
     if (!r) throw new Error('Resend not configured');
-    return (r as any)[prop];
+    return r[prop];
   },
 });

@@ -4,6 +4,7 @@ import { getPrismaClient } from "@/lib/prisma";
 import { command } from "@/lib/agents/commander";
 import { researcherWorker, copywriterWorker, complianceWorker } from "@/lib/agents/workers";
 import { type TaskPlan, type Subtask, type RunStatus, type TaskStatus } from "@/lib/agents/schemas";
+import { errorMessage } from "@/lib/errors";
 import { PrismaClient } from "@prisma/client";
 import type { InputJsonValue } from "@prisma/client/runtime/client";
 
@@ -19,7 +20,7 @@ function topologicalSort(subtasks: Subtask[]): Subtask[] {
   while (result.length < subtasks.length && passes < maxPasses) {
     passes++;
     for (const task of subtasks) {
-      if (result.includes(task)) continue;
+      if (resolved.has(task.id)) continue;
       const depSatisfied =
         !task.dependsOn || (resolved.has(task.dependsOn) || !byId.has(task.dependsOn));
       if (depSatisfied) {
@@ -30,7 +31,7 @@ function topologicalSort(subtasks: Subtask[]): Subtask[] {
   }
 
   for (const task of subtasks) {
-    if (!result.includes(task)) result.push(task);
+    if (!resolved.has(task.id)) result.push(task);
   }
 
   result.sort((a, b) => {
@@ -225,7 +226,7 @@ async function executeWorker(
         throw new Error(`Unknown agent: ${subtask.agentName}`);
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = errorMessage(err);
     logEvent(prisma, runId, `Worker ${subtask.agentName} failed: ${message}`, "ERROR", taskId);
     throw new Error(message);
   }
@@ -236,18 +237,99 @@ async function executeWorker(
 
 // ─── Endpoint ────────────────────────────────────────────────────────────
 
-export async function POST(request: Request) {
+// ─── GET: Fetch a single run ─────────────────────────────────────────────
+
+export async function GET(request: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) {
+  const url = new URL(request.url);
+  const runId = url.searchParams.get("id");
+  const limit = parseInt(url.searchParams.get("limit") ?? "10", 10);
+
+  if (runId) {
+    const prisma = getPrismaClient();
+    try {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: runId },
+        include: {
+          tasks: {
+            orderBy: { order: "asc" },
+          },
+        },
+      });
+      if (!run) {
+        return NextResponse.json({ error: "Run not found" }, { status: 404 });
+      }
+      return NextResponse.json({
+        runId: run.id,
+        status: run.status,
+        objective: run.objective,
+        completedAt: run.completedAt,
+        subtasks: run.tasks.map((t) => ({
+          taskId: t.id,
+          agentName: t.agentName,
+          description: t.description,
+          status: t.status,
+          input: t.input,
+          output: t.output,
+          error: t.error,
+          tokensUsed: t.tokensUsed,
+          order: t.order,
+          dependsOn: t.dependsOn,
+          startedAt: t.startedAt,
+          completedAt: t.completedAt,
+        })),
+        completedSubtasks: run.tasks.filter((t) => t.status === "COMPLETED").length,
+        failedSubtasks: run.tasks.filter((t) => t.status === "FAILED").length,
+        totalTokens: run.tasks.reduce((sum, t) => sum + (t.tokensUsed ?? 0), 0),
+        costEstimate: run.costEstimate,
+      });
+    } catch (err) {
+      const message = errorMessage(err);
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
+  }
+
+  // List recent runs
+  const prisma = getPrismaClient();
+  try {
+    const runs = await prisma.agentRun.findMany({
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: {
+        tasks: {
+          orderBy: { order: "asc" },
+          take: 1,
+        },
+      },
+    });
     return NextResponse.json(
-      { error: "GEMINI_API_KEY is not configured" },
-      { status: 500 },
+      runs.map((r) => ({
+        runId: r.id,
+        status: r.status,
+        objective: r.objective,
+        createdAt: r.createdAt,
+        completedAt: r.completedAt,
+        taskCount: r.tasks.length,
+        totalTokens: r.tasks.reduce((sum, t) => sum + (t.tokensUsed ?? 0), 0),
+        costEstimate: r.costEstimate,
+      })),
     );
+  } catch (err) {
+    const message = errorMessage(err);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+// ─── POST: Create and execute a new run ────────────────────────────────────
+
+export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let objective: string;
@@ -275,7 +357,7 @@ export async function POST(request: Request) {
     runId = await createRun(prisma, objective);
     logEvent(prisma, runId, `Run created for objective: "${objective}"`, "INFO");
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to create run";
+    const message = errorMessage(err);
     console.error("[agents/run] Create run failed:", err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -289,7 +371,7 @@ export async function POST(request: Request) {
     try {
       plan = await command(objective, context);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Commander failed";
+      const message = errorMessage(err);
       logEvent(prisma, runId, `Commander error: ${message}`, "ERROR");
       await markRunFailed(prisma, runId, message);
       return NextResponse.json(
@@ -378,7 +460,7 @@ export async function POST(request: Request) {
           taskId,
         );
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Task failed";
+        const message = errorMessage(err);
         await markTaskFailed(prisma, taskId, message);
 
         subtaskResults.push({
@@ -444,7 +526,7 @@ export async function POST(request: Request) {
       { status: 200 },
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Execution failed";
+    const message = errorMessage(err);
     console.error("[agents/run] Execution error:", err);
     try {
       await markRunFailed(prisma, runId, message);

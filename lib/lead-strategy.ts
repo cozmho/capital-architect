@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { wordCount } from "./text-utils";
 
 export type LeadStrategyLead = {
   id: string;
@@ -36,7 +37,8 @@ export type LeadStrategyResult = {
   source: "ai" | "deterministic";
 };
 
-const DEFAULT_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-3-flash-preview";
+import { DEFAULT_MODEL } from "./ai/client";
+
 const REQUEST_TIMEOUT_MS = 3500;
 
 const SYSTEM_PROMPT = `You are Deal Strategy Analyst for Capital Architect, a B2B funding consultancy.
@@ -49,10 +51,6 @@ Tone must be professional, direct, and action-oriented.
 Output must be one sentence, plain text, max 28 words.
 If confidence is low due to missing critical fields, still produce one sentence focused on the highest-confidence next step.
 Never output markdown, bullets, JSON, or labels.`;
-
-function wordCount(value: string): number {
-  return value.trim().split(/\s+/).filter(Boolean).length;
-}
 
 function normalizeLabelPrefix(value: string): string {
   return value

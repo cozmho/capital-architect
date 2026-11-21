@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-const STRIPE_URL = "https://buy.stripe.com/00wdR8h1F0rT8wCdvLaVa00";
-
 interface VerdicData {
   score: number;
   tier: string;
   hasMetro2Errors: boolean;
   fullName: string;
   businessName: string;
+  email: string;
+  leadId?: string;
 }
 
 export default function RepairPage() {
@@ -18,8 +18,17 @@ export default function RepairPage() {
   useEffect(() => {
     const stored = sessionStorage.getItem("verdicResult");
     if (stored) {
+      const parsed = JSON.parse(stored);
+      // Merge cookie-based leadId if sessionStorage lacks one (survives refresh)
+      const cookieLeadId = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("leadId="))
+        ?.split("=")[1];
+      if (cookieLeadId && !parsed.leadId) {
+        parsed.leadId = cookieLeadId;
+      }
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setData(JSON.parse(stored));
+      setData(parsed);
     }
   }, []);
 
@@ -109,38 +118,36 @@ export default function RepairPage() {
           </li>
         </ul>
 
-        {/* Reassurance block */}
-        <div className="results-reassurance">
-          <div className="results-reassurance-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--gold)" strokeWidth="1.5">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
+        {/* CTAs - Product Cards */}
+        <div className="results-products">
+          <div className="product-card">
+            <h3 className="product-name">Fundability Audit</h3>
+            <p className="product-price">$497</p>
+            <p className="product-description">Exact lender order map so you don't burn inquiries on wrong applications</p>
+            <form action="/api/checkout" method="POST">
+              <input type="hidden" name="productType" value="audit" />
+              <input type="hidden" name="tier" value={data?.tier} />
+              <input type="hidden" name="email" value={data?.email} />
+              <input type="hidden" name="leadId" value={data?.leadId} />
+              <button type="submit" className="btn-primary product-btn">
+                Unlock — $497
+              </button>
+            </form>
           </div>
-          <div>
-            <strong>This is a starting point, not a verdict.</strong>
-            <p>Most Tier C clients reach Tier B within 90–120 days with structured credit architecture. The path exists — your roadmap shows you every step.</p>
+          <div className="product-card">
+            <h3 className="product-name">Funding Roadmap</h3>
+            <p className="product-price">$350</p>
+            <p className="product-description">Complete rebuild roadmap with Metro 2 dispute strategy, entity setup, and dashboard access</p>
+            <form action="/api/checkout" method="POST">
+              <input type="hidden" name="productType" value="roadmap" />
+              <input type="hidden" name="tier" value={data?.tier} />
+              <input type="hidden" name="email" value={data?.email} />
+              <input type="hidden" name="leadId" value={data?.leadId} />
+              <button type="submit" className="btn-primary product-btn">
+                Unlock — $350
+              </button>
+            </form>
           </div>
-        </div>
-
-        {/* CTAs */}
-        <div className="results-ctas">
-          <a href="/dashboard/client/letter-preview" className="btn-outline-gold results-cta">
-            Download Free Dispute Letter
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-            </svg>
-          </a>
-          <a
-            href={STRIPE_URL}
-            className="btn-primary results-cta"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Unlock Your Funding Roadmap — $350
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </a>
         </div>
 
         <p className="results-fine">
@@ -148,13 +155,6 @@ export default function RepairPage() {
           entity setup guide, milestone timeline, and full dashboard access.
         </p>
       </div>
-      <p className="results-disclaimer">
-        Verdic™ is an educational fundability assessment, not a credit report or a guarantee of
-        approval. Capital products, terms, and timelines vary by lender, business profile, and
-        market conditions. Past outcomes shown are representative examples, not promises of
-        specific results. You are never required to purchase any service to exercise your credit
-        rights.
-      </p>
     </div>
   );
 }

@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-function getStripe() {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) return null;
-  return new Stripe(key, { apiVersion: '2026-03-25.dahlia' });
-}
+import { getStripe } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,10 +16,10 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const sessions = await stripe.checkout.sessions.list({
-      limit: 10,
-      expand: ['data.customer_details'],
-    });
+      const sessions = await stripe.checkout.sessions.list({
+        limit: 50,
+        expand: ['data.customer_details'],
+      });
 
     const hasPaid = sessions.data.some(
       (session) =>

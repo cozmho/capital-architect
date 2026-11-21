@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-const STRIPE_URL = "https://buy.stripe.com/00wdR8h1F0rT8wCdvLaVa00";
-
 interface VerdicData {
   score: number;
   tier: string;
   hasMetro2Errors: boolean;
   fullName: string;
   businessName: string;
+  email: string;
+  leadId?: string;
 }
 
 export default function PrepPage() {
@@ -18,8 +18,17 @@ export default function PrepPage() {
   useEffect(() => {
     const stored = sessionStorage.getItem("verdicResult");
     if (stored) {
+      const parsed = JSON.parse(stored);
+      // Merge cookie-based leadId if sessionStorage lacks one (survives refresh)
+      const cookieLeadId = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("leadId="))
+        ?.split("=")[1];
+      if (cookieLeadId && !parsed.leadId) {
+        parsed.leadId = cookieLeadId;
+      }
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setData(JSON.parse(stored));
+      setData(parsed);
     }
   }, []);
 
@@ -106,31 +115,42 @@ export default function PrepPage() {
           </li>
         </ul>
 
-        {/* CTAs */}
-        <div className="results-ctas">
-          <a href="/dashboard/client/letter-preview" className="btn-outline-gold results-cta">
-            Download Free Dispute Letter
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-            </svg>
-          </a>
-          <a
-            href={STRIPE_URL}
-            className="btn-primary results-cta"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Unlock Your Funding Roadmap — $350
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </a>
-        </div>
+        {/* CTAs - Product Cards */}
+                <div className="results-products">
+                  <div className="product-card">
+                    <h3 className="product-name">Fundability Audit</h3>
+                    <p className="product-price">$497</p>
+                    <p className="product-description">Exact lender order map so you don't burn inquiries on wrong applications</p>
+                    <form action="/api/checkout" method="POST">
+                      <input type="hidden" name="productType" value="audit" />
+                      <input type="hidden" name="tier" value={data?.tier} />
+                      <input type="hidden" name="email" value={data?.email} />
+                      <input type="hidden" name="leadId" value={data?.leadId} />
+                      <button type="submit" className="btn-primary product-btn">
+                        Unlock — $497
+                      </button>
+                    </form>
+                  </div>
+                  <div className="product-card">
+                    <h3 className="product-name">Funding Readiness Intensive</h3>
+                    <p className="product-price">$1,500</p>
+                    <p className="product-description">14-day program: entity setup, credit positioning, and underwriting prep</p>
+                    <form action="/api/checkout" method="POST">
+                      <input type="hidden" name="productType" value="intensive" />
+                      <input type="hidden" name="tier" value={data?.tier} />
+                      <input type="hidden" name="email" value={data?.email} />
+                      <input type="hidden" name="leadId" value={data?.leadId} />
+                      <button type="submit" className="btn-primary product-btn">
+                        Unlock — $1,500
+                      </button>
+                    </form>
+                  </div>
+                </div>
 
-        <p className="results-fine">
-          Includes your personalized optimization sprint, dispute strategy,
-          capital stack sequencing, and full dashboard access.
-        </p>
+                <p className="results-fine">
+                  Payment includes your personalized optimization sprint, dispute strategy, capital stack
+                  sequencing, and full dashboard access. 3-day refund guarantee.
+                </p>
       </div>
       <p className="results-disclaimer">
         Verdic™ is an educational fundability assessment, not a credit report or a guarantee of

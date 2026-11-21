@@ -6,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-let _real: PrismaClient | null = null;
+let client: PrismaClient | null = null;
 
 export function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) {
@@ -28,12 +28,12 @@ export function getPrismaClient(): PrismaClient {
 
   const pool = new pg.Pool({ connectionString });
   const adapter = new PrismaPg(pool);
-  const client = new PrismaClient({
+  const prismaClient = new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
 
-  globalForPrisma.prisma = client;
-  _real = client;
-  return client;
+  globalForPrisma.prisma = prismaClient;
+  client = prismaClient;
+  return prismaClient;
 }
