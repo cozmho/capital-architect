@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
-import { BriefcaseBusiness, KeyRound, Target, Users } from "lucide-react";
+import { BriefcaseBusiness, KeyRound, Target, Users, Brain } from "lucide-react";
 import {
   hasValidClerkPublishableKey,
   getUserRole,
@@ -25,6 +25,11 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  {
+    href: "/dashboard/agents",
+    label: "Agent Console",
+    icon: Brain,
+  },
   {
     href: "/dashboard/god-mode",
     label: "God Mode",
